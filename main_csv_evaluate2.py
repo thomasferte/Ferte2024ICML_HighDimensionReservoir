@@ -14,7 +14,7 @@ array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 array_id = 1
 
 folder_path = "output/" + slurm_scenari + "/"
-data_path="data_obfuscated_short/"
+data_path="data_obfuscated/"
 Npop = 200
 Npop = 2
 Ne = 100
