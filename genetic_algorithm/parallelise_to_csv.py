@@ -213,7 +213,7 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_RS"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
@@ -228,7 +228,7 @@ def scenari_define_hp_distribution(scenari, features):
         'hp':["n_estimators","max_depth","learning_rate", "subsample", "colsample_bytree"],
         'type_hp':["int", "int", "num", "num", "num"],
         'low' :[3, 5, 1e-5, 0, 0],
-        'high':[500, 100, 1, 1, 1],
+        'high':[300, 100, 1, 1, 1],
         'log':[False, False, True, False, False]
                   })
         hp_df = pd.DataFrame(hp_df)
@@ -255,7 +255,8 @@ def scenari_define_hp_distribution(scenari, features):
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01'):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_RS"] :
+    "GeneticSingleIs_GA", "GeneticSingleIs_RS",
+    "SingleIs_GA", "SingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     else:
@@ -268,7 +269,7 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
                     "Vaccin_1dose",
                     "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
     
-    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS"] :
+    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS"] :
         global_optimizer = "RS"
     else :
         global_optimizer = "GA"

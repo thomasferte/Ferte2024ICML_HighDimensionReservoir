@@ -212,28 +212,16 @@ def fit_enet(X, Y, reservoir_param):
     enet_model = ElasticNet(alpha=reservoir_param.ridge, l1_ratio=reservoir_param.l1_ratio)
     enet_model.fit(X,Y)
     return enet_model
-# predictions = enet_model.predict(X_test)
-
-### range hp :
-# alpha : same as ridge for esn
-# l1_ratio : uniform [0 ; 1]
 
 def fit_xgboost(X, Y, reservoir_param):
     xgb_model = xgb.XGBRegressor(n_estimators = reservoir_param.n_estimators,
       max_depth = reservoir_param.max_depth,
       learning_rate = reservoir_param.learning_rate,
       subsample = reservoir_param.subsample,
-      colsample_bytree = reservoir_param.colsample_bytree)
+      colsample_bytree = reservoir_param.colsample_bytree,
+      n_jobs = -1)
     xgb_model.fit(X,Y)
     return xgb_model
-# predictions = xgb_model.predict(X_test)
-
-### range hp :
-# n_estimators = integer [10,500]
-# max_depth = integer [5,100]
-# learning_rate = log-uniform [1e-5,1]
-# subsample = uniform[0,1]
-# colsample_bytree = uniform [0,1]
 
 def fit_esn(X,Y, reservoir_param, application_param, vec_coef_enet = 0):
     """Select features on dataframe based on list of names
