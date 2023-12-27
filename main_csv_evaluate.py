@@ -7,24 +7,30 @@ import os
 
 ##### define objective function #####
 slurm_job = os.getenv('SLURM_ARRAY_JOB_ID')
-slurm_job = "test"
+# slurm_job = "test"
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
-slurm_scenari = "GeneticSingleIs"
+# slurm_scenari = "SingleIs_GA"
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')
-array_id = 1
+# array_id = 1
 
 folder_path = "output/" + slurm_scenari + "/"
 data_path="data_obfuscated/"
 Npop = 200
-Npop = 2
+# Npop = 2
 Ne = 100
-Ne = 1
+# Ne = 1
 nb_trials_first = 3200
-nb_trials_first = 3
+# nb_trials_first = 3
 nb_trials_update = 1200
-nb_trials_update = 3
+# nb_trials_update = 3
 first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
+
+if slurm_scenari in [xgb_pred_RS, xgb_pred_GA]:
+    Npop = 20
+    Ne = 10
+    nb_trials_first = 320
+    nb_trials_update = 120
 
 print("------- first optimisation ------------")
 csv_sampler(

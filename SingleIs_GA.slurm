@@ -4,7 +4,7 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J GeneticSingleIs
+#SBATCH -J SingleIs_GA
 
 # walltime (hh:mm::ss)
 #SBATCH -t 05:00:00
@@ -43,7 +43,7 @@ export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 
-cd /gpfs/home/tferte910e/predictcovid_api_python
+cd /gpfs/home/tferte910e/high_dimension_reservoir
 source testenv/bin/activate
 
-python main_csv_evaluate2.py
+python main_csv_evaluate.py
