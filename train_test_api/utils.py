@@ -46,7 +46,13 @@ nb_features : (int, default to 0)
     Number of features to be selected.
 """
     def __init__(self, nb_features = 0, alpha = 0, units =500, warmup = 30 , input_connectivity = 0.1 , rc_connectivity = 0.1 , ridge = 1e-2, spectral_radius = 50 ,
-                 input_scaling = 2000, leaking_rate = 1 , bin_features = 0, activation = "tanh", seed = None ,inputBias = True):
+                 input_scaling = 2000, leaking_rate = 1 , bin_features = 0, activation = "tanh", seed = None ,inputBias = True,
+                 model = "esn",
+                 n_estimators = 10, max_depth = 10, learning_rate = 0.1, subsample = 0.3, colsample_bytree = 0.3,
+                 l1_ratio = 0.5):
+        # define model
+        self.model = model
+        # reservoir hp
         self.units = units
         self.warmup = warmup    
         self.input_connectivity=  input_connectivity
@@ -58,9 +64,17 @@ nb_features : (int, default to 0)
         self.activation = activation
         self.seed = seed
         self.inputBias = inputBias
-        self.alpha = alpha
         self.nb_features = nb_features
         self.bin_features = bin_features
+        # xgb hp
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.learning_rate = learning_rate
+        self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
+        # enet hp
+        self.l1_ratio = l1_ratio
+        self.alpha = alpha
         
         # chose between selection by enet or genetic
         if nb_features != 0 and alpha != 0: 
@@ -195,7 +209,8 @@ def standardise_data_for_ens(df, norm_array = None):
     return X_norm, Y, scaling
 
 def fit_enet(X, Y, reservoir_param):
-    enet_model = ElasticNet(alpha=reservoir_param.alpha, l1_ratio=reservoir_param.l1_ratio)
+    enet_model = ElasticNet(alpha=reservoir_param.ridge, l1_ratio=reservoir_param.l1_ratio)
+    enet_model.fit(X,Y)
     return enet_model
 # predictions = enet_model.predict(X_test)
 
@@ -278,12 +293,15 @@ def fit_esn(X,Y, reservoir_param, application_param, vec_coef_enet = 0):
 def pref_on_test_set(dftest, selected_columns, reservoir_param , application_param , norm_array, esn):
     dftest_selected = dftest[selected_columns]
     X_esn, Y_esn, scaling = standardise_data_for_ens(dftest_selected, norm_array )
-    vecPred = esn.run(X_esn , reset = True)
+    if reservoir_param.model == "esn" :
+        vecPred = esn.run(X_esn , reset = True)
+    if reservoir_param.model in ["enet","xgb"] :
+        vecPred = esn.predict(X_esn)
     dfres = dftest.copy()
     dfres['pred'] = np.squeeze(vecPred) + dfres['hosp']
     dfres = dfres[['outcomeDate','outcome','hosp','pred']].tail(1)
     dfres['nbFeatures'] = np.shape(X_esn)[1]
-    dfres['model'] = "esn"
+    dfres['model'] = reservoir_param.model
     dfres['mintraining'] = application_param.mintraining
     return dfres
 
@@ -323,8 +341,13 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
     pred_esn = pd.DataFrame(columns = ["outcomeDate", "outcome", "hosp","pred","nbFeatures","model", "mintraining"])
     for j in range(application_param.nb_esn):
         # Train the ESN
-        trained_esn = fit_esn(X_esn,Y_esn, reservoir_param, application_param)
-
+        if reservoir_param.model == "esn" :
+            trained_esn = fit_esn(X_esn,Y_esn, reservoir_param, application_param)
+        if reservoir_param.model == "enet" :
+            trained_esn = fit_enet(X_esn, Y_esn, reservoir_param)
+        if reservoir_param.model == "xgb" :
+            trained_esn = fit_xgboost(X_esn, Y_esn, reservoir_param)
+        
         # Predict on new data
         pred_j_esn = pref_on_test_set(dftest=dftest,
           selected_columns = selected_columns,

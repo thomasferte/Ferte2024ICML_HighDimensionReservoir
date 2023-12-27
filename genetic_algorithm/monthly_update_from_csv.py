@@ -3,7 +3,9 @@ from genetic_algorithm.parallelise_to_csv import *
 
 def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari):
     print("get features")
-    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed'] :
+    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
+    "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     else:
@@ -92,6 +94,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                           df_perf = pd.read_csv(new_perf_file)
                           df_perf.dropna(inplace=True)
                           df_perf.loc[df_perf["job_id"] == job_id_to_do, "value"] = value
+                          df_perf.loc[df_perf["job_id"] == job_id_to_do, "optimizer"] = "reevaluate"
                           df_perf.to_csv(new_perf_file, index = False, mode = "w", header = True)
                           fcntl.flock(file, fcntl.LOCK_UN)
               

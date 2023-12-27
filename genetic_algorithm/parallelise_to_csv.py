@@ -67,12 +67,54 @@ def random_sampler_from_hp_df(hp_df):
     return res
 
 def eval_objective_function(params, features, output_path, data_path, job_id, is_training=True, nb_esn = 3, rm_output_files = True, min_date_eval='2021-03-01'):
-    # needed hp
-    ridge = params["ridge"]
-    spectral_radius = params["spectral_radius"]
-    leaking_rate = params["leaking_rate"]
-    
-    # optional hp
+    # xgb
+    if("n_estimators" in params.keys()):
+        n_estimators = int(params["n_estimators"])
+        model = "xgb"
+        nb_esn = 1
+    else :
+        n_estimators = None
+    if("max_depth" in params.keys()):
+        max_depth = int(params["max_depth"])
+    else :
+        max_depth = None
+    if("learning_rate" in params.keys()):
+        learning_rate = params["learning_rate"]
+    else :
+        learning_rate = None
+    if("subsample" in params.keys()):
+        subsample = params["subsample"]
+    else :
+        subsample = None
+    if("colsample_bytree" in params.keys()):
+        colsample_bytree = params["colsample_bytree"]
+    else :
+        colsample_bytree = None
+    # enet
+    if("l1_ratio" in params.keys()):
+        l1_ratio = params["l1_ratio"]
+        model = "enet"
+        nb_esn = 1
+    else :
+        l1_ratio = None
+    if("alpha" in params.keys()):
+        alpha = params["alpha"]
+    else :
+        alpha = 0
+    # reservoir
+    if("leaking_rate" in params.keys()):
+        leaking_rate = params["leaking_rate"]
+        model = "esn"
+    else :
+        leaking_rate = None
+    if("spectral_radius" in params.keys()):
+        spectral_radius = params["spectral_radius"]
+    else :
+        spectral_radius = None
+    if("ridge" in params.keys()):
+        ridge = params["ridge"]
+    else :
+        ridge = None
     if("seed" in params.keys()):
         seed = int(params["seed"])
         nb_esn = 1
@@ -82,14 +124,12 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         nb_features = params["nb_features"]
     else :
         nb_features = 0
-    if("alpha" in params.keys()):
-        alpha = params["alpha"]
-    else :
-        alpha = 0
     if("input_scaling" in params.keys()):
         input_scaling = params["input_scaling"]
     else :
         input_scaling = {key: value for key, value in params.items() if key in features}
+        if not bool(input_scaling) :
+            input_scaling = None
     
     bin_filtered_dict = {key: value for key, value in params.items() if key.endswith("bin")}
     if(len(bin_filtered_dict) > 0):
@@ -111,7 +151,14 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         bin_features=bin_features,
         input_scaling=input_scaling,
         leaking_rate=leaking_rate,
-        spectral_radius=spectral_radius),
+        spectral_radius=spectral_radius,
+        model = model,
+        n_estimators = n_estimators,
+        max_depth = max_depth,
+        learning_rate = learning_rate,
+        subsample = subsample,
+        colsample_bytree = colsample_bytree,
+        l1_ratio = l1_ratio),
       job_id=job_id,
       output_path=output_path)
     
@@ -166,28 +213,49 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed']
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_RS"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
     multiple_is = scenari in ["epidemioMultipleIs", "GeneticMultipleIsBin", "GeneticMultipleIsSelect", "GeneticMultipleIsBinSeed"]
-    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs']
+    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_RS"]
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
     
-    hp_df = define_hp_distribution(
-      features = features,
-      multiple_is=multiple_is,
-      bin_features=bin_features,
-      enet = enet,
-      is_feature_selection = is_feature_selection,
-      seed = seed)
+    if scenari in ["xgb_pred_GA", "xgb_pred_RS"] :
+        hp_df = ({
+        'hp':["n_estimators","max_depth","learning_rate", "subsample", "colsample_bytree"],
+        'type_hp':["int", "int", "num", "num", "num"],
+        'low' :[3, 5, 1e-5, 0, 0],
+        'high':[500, 100, 1, 1, 1],
+        'log':[False, False, True, False, False]
+                  })
+        hp_df = pd.DataFrame(hp_df)
+    elif scenari in ["enet_pred_GA", "enet_pred_RS"] :
+        hp_df = ({
+        'hp':["ridge","l1_ratio"],
+        'type_hp':["num", "num"],
+        'low' :[1e-10, 0],
+        'high':[1e5, 1],
+        'log':[True, False]
+                  })
+        hp_df = pd.DataFrame(hp_df)
+    else :
+        hp_df = define_hp_distribution(
+          features = features,
+          multiple_is=multiple_is,
+          bin_features=bin_features,
+          enet = enet,
+          is_feature_selection = is_feature_selection,
+          seed = seed)
     
     return hp_df
  
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01'):
-    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed'] :
+    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
+    "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     else:
@@ -199,6 +267,11 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
                     "IPTCC.mean",
                     "Vaccin_1dose",
                     "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
+    
+    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS"] :
+        global_optimizer = "RS"
+    else :
+        global_optimizer = "GA"
     
     ### Define hp distribution
     hp_df = scenari_define_hp_distribution(scenari, features)
@@ -213,20 +286,36 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         ### determine wether to use GA or random sampling
         perf_df = GA_or_randomsearch(path_file=path_file, Npop=Npop)
         nb_trials_done = len(perf_df)
-        if nb_trials_done > 0:
-            params = genetic_sampler_from_df(perf_df, hp_df, Npop=Npop, Ne=Ne)
-        else:
+        # choice of optimizer
+        if global_optimizer == "GA" :
+            if nb_trials_done > 0:
+                optimizer = "GA"
+                # keep only hp and value
+                col_to_keep = hp_df.hp.to_list()
+                col_to_keep.append("value")
+                col_to_keep.append("job_id")
+                filtered_perf_df = perf_df.loc[:, col_to_keep]
+                params = genetic_sampler_from_df(perf_df=filtered_perf_df, hp_df=hp_df, Npop=Npop, Ne=Ne)
+            else:
+                optimizer = "RS"
+                params = random_sampler_from_hp_df(hp_df=hp_df)
+        else :
+            optimizer = "RS"
             params = random_sampler_from_hp_df(hp_df=hp_df)
         ### evaluate objective function
         # define job_id
-        current_time = datetime.now().strftime("%d_%m_%H_%M_%S")
-        job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + current_time
+        job_start = datetime.now()
+        job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + job_start.strftime("%d_%m_%H_%M_%S")
         # evaluate
         value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date)
+        job_end = datetime.now()
+        delta = job_end - job_start
         ### save results
         # prepare df to save
         params['value'] = value
         params['job_id'] = job_id
+        params['time_seconds'] = delta.total_seconds()
+        params['optimizer'] = optimizer
         df_to_save = pd.DataFrame.from_dict([params])
         ### save value + dictionnary params inside file
         save_locked_csv(path_file=path_file, df_to_save=df_to_save)
