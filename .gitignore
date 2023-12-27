@@ -7,3 +7,7 @@ data_obfuscated/*
 data_obfuscated_short/*
 data/*
 *_pycache_*
+myenv/*
+output/*
+std_err/*
+std_out/*
