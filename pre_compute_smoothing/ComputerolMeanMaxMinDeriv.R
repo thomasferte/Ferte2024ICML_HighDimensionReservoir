@@ -31,10 +31,10 @@ ComputerolMeanMaxMinDeriv <- function(df,
 
   result <- df %>%
     arrange(date_column) %>%
-    mutate(across(where(is.double) & !any_of(excludeTansf),
-                  list(rolMean = rolMean,
-                       rolMax = rolMax,
-                       rolMin = rolMin))) %>%
+    # mutate(across(where(is.double) & !any_of(excludeTansf),
+    #               list(rolMean = rolMean,
+    #                    rolMax = rolMax,
+    #                    rolMin = rolMin))) %>%
     mutate(across(where(is.double) & !any_of(excludeTansf),
                   ls_fct_rolDeriv)) %>%
     dplyr::filter(across(.cols = -any_of(c("outcome", "outcomeDate", "outcomeRef")),
