@@ -3,7 +3,7 @@ library(dplyr)
 
 nb_cores = parallel::detectCores()-2
 
-file_path <- list.files(path = "function",
+file_path <- list.files(path = "pre_compute_smoothing",
                         full.names = TRUE,
                         recursive = TRUE)
 
