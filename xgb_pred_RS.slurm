@@ -4,10 +4,10 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J SingleIs_GA
+#SBATCH -J xgb_pred_RS
 
 # walltime (hh:mm::ss)
-#SBATCH -t 10:00:00
+#SBATCH -t 25:00:00
 
 
 # change working directory
