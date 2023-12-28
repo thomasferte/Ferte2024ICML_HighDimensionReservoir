@@ -79,40 +79,40 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     else :
         max_depth = None
     if("learning_rate" in params.keys()):
-        learning_rate = params["learning_rate"]
+        learning_rate = float(params["learning_rate"])
     else :
         learning_rate = None
     if("subsample" in params.keys()):
-        subsample = params["subsample"]
+        subsample = float(params["subsample"])
     else :
         subsample = None
     if("colsample_bytree" in params.keys()):
-        colsample_bytree = params["colsample_bytree"]
+        colsample_bytree = float(params["colsample_bytree"])
     else :
         colsample_bytree = None
     # enet
     if("l1_ratio" in params.keys()):
-        l1_ratio = params["l1_ratio"]
+        l1_ratio = float(params["l1_ratio"])
         model = "enet"
         nb_esn = 1
     else :
         l1_ratio = None
     if("alpha" in params.keys()):
-        alpha = params["alpha"]
+        alpha = float(params["alpha"])
     else :
         alpha = 0
     # reservoir
     if("leaking_rate" in params.keys()):
-        leaking_rate = params["leaking_rate"]
+        leaking_rate = float(params["leaking_rate"])
         model = "esn"
     else :
         leaking_rate = None
     if("spectral_radius" in params.keys()):
-        spectral_radius = params["spectral_radius"]
+        spectral_radius = float(params["spectral_radius"])
     else :
         spectral_radius = None
     if("ridge" in params.keys()):
-        ridge = params["ridge"]
+        ridge = float(params["ridge"])
     else :
         ridge = None
     if("seed" in params.keys()):
@@ -121,13 +121,13 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     else :
         seed = None
     if("nb_features" in params.keys()):
-        nb_features = params["nb_features"]
+        nb_features = int(params["nb_features"])
     else :
         nb_features = 0
     if("input_scaling" in params.keys()):
-        input_scaling = params["input_scaling"]
+        input_scaling = float(params["input_scaling"])
     else :
-        input_scaling = {key: value for key, value in params.items() if key in features}
+        input_scaling = {key: float(value) for key, value in params.items() if key in features}
         if not bool(input_scaling) :
             input_scaling = None
     
@@ -201,6 +201,7 @@ def GA_or_randomsearch(path_file, Npop):
           fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
           perf_df = pd.read_csv(path_file)
           perf_df = perf_df[perf_df['value'] != 'inprogress']
+          perf_df = perf_df[perf_df['value'] != 'todo']
           fcntl.flock(file, fcntl.LOCK_UN)  # Release the lock
       if(len(perf_df) >= Npop):
           res = perf_df
