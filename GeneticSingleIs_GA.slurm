@@ -4,7 +4,7 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J SingleIs_GA
+#SBATCH -J GeneticSingleIs_GA
 
 # walltime (hh:mm::ss)
 #SBATCH -t 10:00:00
