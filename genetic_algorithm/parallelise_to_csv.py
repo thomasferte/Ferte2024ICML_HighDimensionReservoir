@@ -162,9 +162,12 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
       job_id=job_id,
       output_path=output_path)
     
-    # if rm_output_files:
-    #     rmtree(output_path+job_id)
-
+    try:
+        if rm_output_files:
+            rmtree(output_path+job_id)
+    except:
+        pass
+    
     # remove core files
     for filename in os.listdir():
         if filename.startswith("core"):

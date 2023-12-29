@@ -47,25 +47,33 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
         file_ok = 1
         while file_ok != 0 and file_ok < 100 :
             try:
-                with open(new_perf_file, 'a+') as file:
-                    fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-                    df_perf = pd.read_csv(new_perf_file)
-                    dftodo = df_perf[df_perf["value"] == "todo"]
-                    nb_trials_to_reevaluate = len(dftodo)
-                    print("nb_trials_to_reevaluate = " + str(nb_trials_to_reevaluate))
-                    # set in progress value and save file
-                    if(nb_trials_to_reevaluate > 0):
-                        random_row = dftodo.sample(n=1, random_state=random.seed())
-                        job_id_to_do = random_row.iloc[0]["job_id"]
-                        # job_id_to_do = df_perf[df_perf["value"] == "todo"].iloc[0]["job_id"]
-                        # set to in progress to inform other nodes
-                        # df_perf.loc[df_perf["job_id"] == job_id_to_do, "value"] = "inprogress"
-                        # df_perf.to_csv(new_perf_file, index = False, mode = "w", header = True)
-                    # close file
-                    fcntl.flock(file, fcntl.LOCK_UN)
+                df_perf = pd.read_csv(new_perf_file)
+                dftodo = df_perf[df_perf["value"] == "todo"]
+                nb_trials_to_reevaluate = len(dftodo)
+                print("nb_trials_to_reevaluate = " + str(nb_trials_to_reevaluate))
+                if(nb_trials_to_reevaluate > 0):
+                    random_row = dftodo.sample(n=1, random_state=random.seed())
+                    job_id_to_do = random_row.iloc[0]["job_id"]
+                file_ok = 0
+                #with open(new_perf_file, 'a+') as file:
+                #    fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+                #    df_perf = pd.read_csv(new_perf_file)
+                #    dftodo = df_perf[df_perf["value"] == "todo"]
+                #    nb_trials_to_reevaluate = len(dftodo)
+                #    print("nb_trials_to_reevaluate = " + str(nb_trials_to_reevaluate))
+                #    # set in progress value and save file
+                #    if(nb_trials_to_reevaluate > 0):
+                #        random_row = dftodo.sample(n=1, random_state=random.seed())
+                #        job_id_to_do = random_row.iloc[0]["job_id"]
+                #        # job_id_to_do = df_perf[df_perf["value"] == "todo"].iloc[0]["job_id"]
+                #        # set to in progress to inform other nodes
+                #        # df_perf.loc[df_perf["job_id"] == job_id_to_do, "value"] = "inprogress"
+                #        # df_perf.to_csv(new_perf_file, index = False, mode = "w", header = True)
+                #    # close file
+                #    fcntl.flock(file, fcntl.LOCK_UN)
                     file_ok = 0
             except:
-                print(str(file_ok) + " attempt, retry")
+                print(str(file_ok) + " failed attempt to access main file, retry")
                 file_ok += 1
                 time.sleep(5)
             
@@ -99,6 +107,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                           fcntl.flock(file, fcntl.LOCK_UN)
               
               except pd.errors.EmptyDataError:
+                  print("Failed to reevaluate objective function, retry")
                   value = 1000
                   nb_try += 1
                   time.sleep(2)
