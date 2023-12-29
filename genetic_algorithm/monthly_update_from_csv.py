@@ -1,7 +1,8 @@
 import pandas as pd
+from flock import Flock
 from genetic_algorithm.parallelise_to_csv import *
 
-def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari):
+def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id):
     print("get features")
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
@@ -20,24 +21,36 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     
     ##### select best trials from previous results
     print("get file perf = " + previous_perf_path)
-    with open(previous_perf_path, 'r') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-            df_previous_perf = pd.read_csv(file).dropna()
-            fcntl.flock(file, fcntl.LOCK_UN)
+    df_previous_perf = pd.read_csv(previous_perf_path).dropna()
+    # with open(previous_perf_path, 'r') as file:
+    #         fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+    #         df_previous_perf = pd.read_csv(file).dropna()
+    #         fcntl.flock(file, fcntl.LOCK_UN)
     top_trials = df_previous_perf.sort_values('value', ascending=False).tail(Npop)
     top_trials["value"] = "todo"
     
     # if file didn't exist, read it to check and write with header if needed
     new_perf_file = perf_folder+date+".csv"
-    
     # if file does not exist yet, create it with previous values to "todo"
     if(not os.path.exists(new_perf_file)):
-        with open(new_perf_file, 'a+') as file:
-            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-            file_size = file.tell()  # Move to the beginning of the file
-            if file_size == 0:
-                top_trials.to_csv(new_perf_file, index=False, mode = "w", header = True)
-            fcntl.flock(file, fcntl.LOCK_UN)
+            with open(new_perf_file, 'a+') as file:
+                    fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+                    # Check the number of lines
+                    file_size = file.tell()  # Move to the beginning of the file
+                    if file_size == 0:
+                        top_trials.to_csv(new_perf_file, index=False, mode = "a", header = True)
+                    else :
+                        top_trials.to_csv(new_perf_file, index=False, mode = "a", header = False)
+                    fcntl.flock(file, fcntl.LOCK_UN)
+            
+#         with Flock(new_perf_file_lock, 'w'):
+#             top_trials.to_csv(new_perf_file, index=False, mode = "w", header = True)
+#         with open(new_perf_file, 'a+') as file:
+#             fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+#             file_size = file.tell()  # Move to the beginning of the file
+#             if file_size == 0:
+#                 top_trials.to_csv(new_perf_file, index=False, mode = "w", header = True)
+#             fcntl.flock(file, fcntl.LOCK_UN)
     
     # open file, set value to in progress, close file, evaluate job, update file
     nb_trials_to_reevaluate = 1
@@ -71,7 +84,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                 #        # df_perf.to_csv(new_perf_file, index = False, mode = "w", header = True)
                 #    # close file
                 #    fcntl.flock(file, fcntl.LOCK_UN)
-                    file_ok = 0
+                #    file_ok = 0
             except:
                 print(str(file_ok) + " failed attempt to access main file, retry")
                 file_ok += 1
@@ -93,7 +106,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                     params = params,
                     features = features,
                     data_path = data_path,
-                    job_id = job_id_to_do+"_at_" + date,
+                    job_id = job_id_to_do+"_at_" + date + "_by_" + array_id,
                     output_path=perf_folder+"csv_parallel/"+date+"/"
                   )
                   if value < 999:
@@ -142,6 +155,7 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
                         date=date,
                         data_path=data_path,
                         Npop=Npop,
+                        array_id = array_id,
                         scenari=scenari
                         )
                     trial_ok = 0

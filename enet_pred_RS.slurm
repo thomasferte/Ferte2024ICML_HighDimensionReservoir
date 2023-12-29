@@ -7,15 +7,15 @@
 #SBATCH -J enet_pred_RS
 
 # walltime (hh:mm::ss)
-#SBATCH -t 10:00:00
+#SBATCH -t 15:00:00
 
 
 # change working directory
 # SBATCH --chdir=.
 
 ### In filenames, %j=jobid, %a=index in job array
-#SBATCH -o std_out/%j_%a_%x.out # standard out goes to this file
-#SBATCH -e std_err/%j_%a_%x.err # standard err goes to this file
+#SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
+#SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
 #SBATCH --array 0-99
 #SBATCH --ntasks 1
@@ -43,7 +43,13 @@ export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 
-cd /gpfs/home/tferte910e/high_dimension_reservoir
-source /gpfs/home/tferte910e/predictcovid_api_python/testenv/bin/activate
+# cd /gpfs/home/tferte910e/high_dimension_reservoir
+# source /gpfs/home/tferte910e/predictcovid_api_python/testenv/bin/activate
+
+module load build/conda/4.10
+conda activate testenv
+cd /home/tferte/high_dimension_reservoir
+
+ulimit -c 0
 
 python main_csv_evaluate.py

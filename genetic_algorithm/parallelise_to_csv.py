@@ -200,12 +200,9 @@ def GA_or_randomsearch(path_file, Npop):
   res = []
   bool_file_exists = os.path.exists(path_file)
   if(bool_file_exists):
-      with open(path_file, 'r') as file:
-          fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-          perf_df = pd.read_csv(path_file)
-          perf_df = perf_df[perf_df['value'] != 'inprogress']
-          perf_df = perf_df[perf_df['value'] != 'todo']
-          fcntl.flock(file, fcntl.LOCK_UN)  # Release the lock
+      perf_df = pd.read_csv(path_file)
+      perf_df = perf_df[perf_df['value'] != 'inprogress']
+      perf_df = perf_df[perf_df['value'] != 'todo']
       if(len(perf_df) >= Npop):
           res = perf_df
   
