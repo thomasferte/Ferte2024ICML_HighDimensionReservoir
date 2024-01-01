@@ -214,12 +214,12 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
     multiple_is = scenari in ["epidemioMultipleIs", "GeneticMultipleIsBin", "GeneticMultipleIsSelect", "GeneticMultipleIsBinSeed"]
-    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_RS"]
+    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"]
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
@@ -256,7 +256,7 @@ def scenari_define_hp_distribution(scenari, features):
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
     "SingleIs_GA", "SingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)

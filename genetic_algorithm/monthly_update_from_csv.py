@@ -6,7 +6,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     print("get features")
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_RS"] :
+    "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     else:
