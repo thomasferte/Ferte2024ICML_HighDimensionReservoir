@@ -2,7 +2,7 @@ import pandas as pd
 from flock import Flock
 from genetic_algorithm.parallelise_to_csv import *
 
-def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id):
+def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id, units = 500):
     print("get features")
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
@@ -102,6 +102,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                   temp = params.pop("job_id")
                   current_time = datetime.now().strftime("%d_%m_%H_%M_%S")
                   value = eval_objective_function(
+                    units = units,
                     min_date_eval = date,
                     params = params,
                     features = features,
@@ -127,7 +128,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     
     return new_perf_file
 
-def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d')):
+def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d'), units = 500):
     ##### get all dates files
     files = pd.DataFrame(glob.glob(data_path + '*.csv'),columns = ['full_path'])
     files['file_name'] = files.full_path.str.split(data_path,n=1).str[-1]
@@ -150,6 +151,7 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
             while trial_ok != 0 and trial_ok < 1000 :
                 try:
                     previous_perf_path = reevaluate_previous_trials(
+                        units = units,
                         previous_perf_path=previous_perf_path,
                         perf_folder=perf_folder,
                         date=date,
@@ -168,6 +170,7 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
             while trial_sampler_ok != 0 and trial_sampler_ok < 1000 :
                 try:
                     csv_sampler(
+                        units = units,
                         path_file=previous_perf_path,
                         date=date,
                         data_path=data_path,

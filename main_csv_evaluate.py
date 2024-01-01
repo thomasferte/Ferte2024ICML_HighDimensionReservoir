@@ -35,6 +35,7 @@ output_path = folder_path + "csv_parallel/"
 
 print("------- first optimisation ------------")
 csv_sampler(
+  units = 500,
   path_file= folder_path + first_perf_file,
   data_path=data_path,
   output_path= output_path+"first_optimisation/",

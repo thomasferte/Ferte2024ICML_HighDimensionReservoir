@@ -66,7 +66,7 @@ def random_sampler_from_hp_df(hp_df):
         res[param_name] = param_value
     return res
 
-def eval_objective_function(params, features, output_path, data_path, job_id, is_training=True, nb_esn = 3, rm_output_files = True, min_date_eval='2021-03-01'):
+def eval_objective_function(params, features, output_path, data_path, job_id, is_training=True, nb_esn = 3, rm_output_files = True, min_date_eval='2021-03-01', units = 500):
     # xgb
     if("n_estimators" in params.keys()):
         n_estimators = int(params["n_estimators"])
@@ -143,7 +143,7 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
       application_param=appParam(mintraining=365, nb_esn= nb_esn, is_training=is_training,
                                 vecFeaturesEpi=features),
       reservoir_param=reservoirParam(
-        units=500,
+        units=units,
         ridge=ridge,
         alpha=alpha,
         nb_features=nb_features,
@@ -253,7 +253,7 @@ def scenari_define_hp_distribution(scenari, features):
     
     return hp_df
  
-def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01'):
+def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
     "GeneticSingleIs_GA", "GeneticSingleIs_RS",
@@ -309,7 +309,7 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         job_start = datetime.now()
         job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + job_start.strftime("%d_%m_%H_%M_%S")
         # evaluate
-        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date)
+        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units)
         job_end = datetime.now()
         delta = job_end - job_start
         ### save results

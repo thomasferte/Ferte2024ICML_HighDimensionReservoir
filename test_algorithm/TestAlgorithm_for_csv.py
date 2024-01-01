@@ -6,6 +6,7 @@ from re import sub
 from re import match
 
 def TestAlgorithm_for_csv(
+  units = 500,
   output_path,
   data_path,
   study_path,
@@ -70,6 +71,7 @@ def TestAlgorithm_for_csv(
     	temp = params.pop("job_id")
     	# get trial
     	eval_objective_function(
+    	  units = units,
     	  rm_output_files=False,
     	  params=params,
     	  features=features,
