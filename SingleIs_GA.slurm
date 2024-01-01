@@ -7,7 +7,7 @@
 #SBATCH -J SingleIs_GA
 
 # walltime (hh:mm::ss)
-#SBATCH -t 15:00:00
+#SBATCH -t 07:00:00
 
 
 # change working directory

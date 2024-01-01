@@ -48,7 +48,7 @@ def TestAlgorithm_for_csv(
                     "Vaccin_1dose",
                     "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
     else:
-        with open("list_features/all457", "r") as fp:
+        with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     
     # Get all the trials as a DataFrame and remove trials with missing values

@@ -4,10 +4,10 @@
 # les directives Slurm vont ici:
 
 # Your job name (displayed by the queue)
-#SBATCH -J xgb_pred_RS
+#SBATCH -J SingleIs_GA
 
 # walltime (hh:mm::ss)
-#SBATCH -t 20:00:00
+#SBATCH -t 15:00:00
 
 
 # change working directory
@@ -17,9 +17,9 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-99
+#SBATCH --array 0-10
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 5
+#SBATCH --cpus-per-task 10
 #SBATCH --mem-per-cpu=2560
 
 # fin des directives PBS
@@ -52,4 +52,4 @@ cd /home/tferte/high_dimension_reservoir
 
 ulimit -c 0
 
-python main_csv_evaluate.py
+python main_csv_test.py
