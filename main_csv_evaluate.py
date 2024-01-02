@@ -28,10 +28,10 @@ if slurm_scenari in ["GeneticSingleIs_GA_1000"]:
 else :
     units = 500
 
-# Npop = 2
-# Ne = 1
+# Npop = 2
+# Ne = 1
 # nb_trials_first = 3
-# nb_trials_update = 3
+# nb_trials_update = 3
 
 print("------- first optimisation ------------")
 csv_sampler(

@@ -7,7 +7,7 @@
 #SBATCH -J GeneticSingleIs_GA_1000
 
 # walltime (hh:mm::ss)
-#SBATCH -t 12:00:00
+#SBATCH -t 20:00:00
 
 
 # change working directory
@@ -17,7 +17,7 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-99
+#SBATCH --array 0-199
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 5
 #SBATCH --mem-per-cpu=2560
@@ -42,6 +42,7 @@ echo "#############################"
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
+export TMPDIR=/beegfs/tferte/tempfiles/
 
 # cd /gpfs/home/tferte910e/high_dimension_reservoir
 # source /gpfs/home/tferte910e/predictcovid_api_python/testenv/bin/activate

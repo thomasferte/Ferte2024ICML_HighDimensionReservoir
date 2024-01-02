@@ -377,13 +377,18 @@ def get_relative_baseline(path_out):
     df_result.loc[df_result['pred']<0,'pred'] = 0
     df_grouped_by_date = df_result.groupby(['outcomeDate', 'model']).median()[['outcome','hosp','pred']]
     df_filter = df_grouped_by_date.loc[~(df_grouped_by_date['outcome'].isna())].copy()
+    # replace by 10 if below 10 (obfuscation)
+    df_filter['pred'] = df_filter['pred'] * (df_filter['pred'] > 10) + 10 * (df_filter['pred'] <= 10)
+    df_filter['outcome'] = df_filter['outcome'] * (df_filter['outcome'] > 10) + 10 * (df_filter['outcome'] <= 10)
+    df_filter['hosp'] = df_filter['hosp'] * (df_filter['hosp'] > 10) + 10 * (df_filter['hosp'] <= 10)
+    # compute error
     df_filter['AE'] = np.abs(df_filter['pred']-df_filter['outcome'])
     df_filter['AE_baseline'] = np.abs(df_filter['hosp']-df_filter['outcome'])
     df_filter['delta_baseline'] = df_filter['AE']-df_filter['AE_baseline']
     df_filter['relative_baseline']=df_filter['AE']/df_filter['AE_baseline']
     df_filter['RE'] = df_filter['AE']/df_filter['outcome']
 
-    return df_filter['AE'].median()
+    return df_filter['AE'].mean()
 
 
 def perform_full_training(path, application_param, reservoir_param, job_id,output_path, min_date_eval='2021-03-01', forecast_days=14, lsFiles = None):

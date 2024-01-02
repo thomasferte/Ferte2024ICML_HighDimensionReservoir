@@ -15,7 +15,7 @@ print(slurm_scenari + " " + str(array_id))
 
 # Get the params files
 nb_esn = 1
-if slurm scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]:
+if slurm_scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]:
     nb_best_trials = 40
 if slurm_scenari in ["xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS"]:
     nb_best_trials = 1
