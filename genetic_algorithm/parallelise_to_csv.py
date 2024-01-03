@@ -200,7 +200,11 @@ def GA_or_randomsearch(path_file, Npop):
   res = []
   bool_file_exists = os.path.exists(path_file)
   if(bool_file_exists):
-      perf_df = pd.read_csv(path_file)
+      with open(path_file, 'r') as file:
+           fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+           perf_df = pd.read_csv(path_file)
+           fcntl.flock(file, fcntl.LOCK_UN)
+    
       perf_df = perf_df[perf_df['value'] != 'inprogress']
       perf_df = perf_df[perf_df['value'] != 'todo']
       if(len(perf_df) >= Npop):
@@ -278,7 +282,15 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
     ### Define hp distribution
     hp_df = scenari_define_hp_distribution(scenari, features)
     ### initiate nb_trials_done
-    perf_df = GA_or_randomsearch(path_file=path_file, Npop=Npop)
+    cpt = 0
+    while cpt < 100:
+        cpt +=1
+        try:
+            perf_df = GA_or_randomsearch(path_file=path_file, Npop=Npop)
+        except:
+            print("GA_or_randomsearch failed, retry")
+            time.sleep(5)
+    
     nb_trials_done = len(perf_df)
     ### launch loop
     cpt=-1

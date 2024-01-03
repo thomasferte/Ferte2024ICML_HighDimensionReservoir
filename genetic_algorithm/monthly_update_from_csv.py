@@ -21,11 +21,10 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     
     ##### select best trials from previous results
     print("get file perf = " + previous_perf_path)
-    df_previous_perf = pd.read_csv(previous_perf_path).dropna()
-    # with open(previous_perf_path, 'r') as file:
-    #         fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-    #         df_previous_perf = pd.read_csv(file).dropna()
-    #         fcntl.flock(file, fcntl.LOCK_UN)
+    with open(previous_perf_path, 'r') as file:
+           fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+           df_previous_perf = pd.read_csv(previous_perf_path).dropna()
+           fcntl.flock(file, fcntl.LOCK_UN)
     top_trials = df_previous_perf.sort_values('value', ascending=False).tail(Npop)
     top_trials["value"] = "todo"
     
@@ -60,7 +59,11 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
         file_ok = 1
         while file_ok != 0 and file_ok < 100 :
             try:
-                df_perf = pd.read_csv(new_perf_file)
+                with open(new_perf_file, 'r') as file:
+                    fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
+                    df_perf = pd.read_csv(new_perf_file)
+                    fcntl.flock(file, fcntl.LOCK_UN)
+                
                 dftodo = df_perf[df_perf["value"] == "todo"]
                 nb_trials_to_reevaluate = len(dftodo)
                 print("nb_trials_to_reevaluate = " + str(nb_trials_to_reevaluate))
