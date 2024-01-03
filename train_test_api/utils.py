@@ -335,7 +335,13 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
             trained_esn = fit_enet(X_esn, Y_esn, reservoir_param)
         if reservoir_param.model == "xgb" :
             trained_esn = fit_xgboost(X_esn, Y_esn, reservoir_param)
-        
+            if not reservoir_param.is_training:
+                # get feature importance of xgboost
+                imp_xgb = pd.DataFrame({'features': selected_columns.to_list(),
+                    'importance': trained_esn.feature_importances_.tolist()})
+                os.makedirs(output_path + job_id + '_xgb_importance', exist_ok = True)
+                imp_xgb.to_csv(output_path+ job_id + '_xgb_importance/result_job_'+ selected_files.file_name[index],index=False)
+                
         # Predict on new data
         pred_j_esn = pref_on_test_set(dftest=dftest,
           selected_columns = selected_columns,
