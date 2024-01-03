@@ -4,20 +4,7 @@ from genetic_algorithm.parallelise_to_csv import *
 
 def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id, units = 500):
     print("get features")
-    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
-    "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"] :
-        with open("data/allfeatures", "r") as fp:
-            features = json.load(fp)
-    else:
-        features = ["hosp", "hosp_rolDeriv7",
-                    "P_TOUS_AGES", "P_TOUS_AGES_rolDeriv7",
-                    "P_60_90_PLUS_ANS", "P_60_90_PLUS_ANS_rolDeriv7",
-                    "FRACP_TOUS_AGES", "FRACP_TOUS_AGES_rolDeriv7",
-                    "FRACP_60_90_PLUS_ANS", "FRACP_60_90_PLUS_ANS_rolDeriv7",
-                    "IPTCC.mean",
-                    "Vaccin_1dose",
-                    "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
+    features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
     
     ##### select best trials from previous results
     print("get file perf = " + previous_perf_path)

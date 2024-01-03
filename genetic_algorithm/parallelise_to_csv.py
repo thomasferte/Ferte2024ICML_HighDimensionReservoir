@@ -218,12 +218,12 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
     multiple_is = scenari in ["epidemioMultipleIs", "GeneticMultipleIsBin", "GeneticMultipleIsSelect", "GeneticMultipleIsBinSeed"]
-    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"]
+    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"]
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
@@ -256,11 +256,11 @@ def scenari_define_hp_distribution(scenari, features):
           seed = seed)
     
     return hp_df
- 
-def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500):
+
+def features_nbesn_optimizer_from_scenari(scenari):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
     "SingleIs_GA", "SingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
@@ -278,6 +278,20 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         global_optimizer = "RS"
     else :
         global_optimizer = "GA"
+    
+    ### set number of repetition
+    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS"] :
+        nb_esn = 1
+    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"] :
+        nb_esn = 3
+    elif scenari in ["GeneticSingleIs_GA_10esn"] :
+        nb_esn = 10
+    
+    return features, global_optimizer ,nb_esn
+
+def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500):
+    
+    features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
     
     ### Define hp distribution
     hp_df = scenari_define_hp_distribution(scenari, features)
@@ -321,7 +335,7 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         job_start = datetime.now()
         job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + job_start.strftime("%d_%m_%H_%M_%S")
         # evaluate
-        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units)
+        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units, nb_esn=nb_esn)
         job_end = datetime.now()
         delta = job_end - job_start
         ### save results
