@@ -14,10 +14,6 @@ array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 folder_path = "/beegfs/tferte/output/" + slurm_scenari + "/"
 # folder_path = "output/" + slurm_scenari + "/"
 data_path="data_obfuscated/"
-Npop = 200
-Ne = 100
-nb_trials_first = 3200
-nb_trials_update = 1200
 first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
@@ -26,8 +22,19 @@ if slurm_scenari in ["GeneticSingleIs_GA_1000"]:
 else :
     units = 500
 
-# Npop = 2
-# Ne = 1
+if slurm_scenari in ["GeneticSingleIs_GA_10esn_fourth", "GeneticSingleIs_RS_10esn_fourth"]:
+    Npop = 100
+    Ne = 50
+    nb_trials_first = 800
+    nb_trials_update = 300
+else :
+    Npop = 200
+    Ne = 100
+    nb_trials_first = 3200
+    nb_trials_update = 1200
+
+# Npop = 2
+# Ne = 1
 # nb_trials_first = 3
 # nb_trials_update = 3
 
