@@ -1,5 +1,3 @@
-from evolutive_hp.evolutive_hp import *
-from evolutive_hp.evolutive_hp_settings import *
 from train_test_api.utils import *
 from test_algorithm.TestAlgorithm_for_csv import *
 from genetic_algorithm.parallelise_to_csv import *

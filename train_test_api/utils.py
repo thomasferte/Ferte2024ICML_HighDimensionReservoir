@@ -328,6 +328,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
 
     pred_esn = pd.DataFrame(columns = ["outcomeDate", "outcome", "hosp","pred","nbFeatures","model", "mintraining"])
     importance = None
+    current_outcomeDate = dftest['outcomeDate'].tail(1).to_list()[0]
     for j in range(application_param.nb_esn):
         # Train the ESN
         if reservoir_param.model == "esn" :
@@ -336,6 +337,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
                 ridge_layer = trained_esn.node_names[3]
                 coef = trained_esn.get_param(ridge_layer)['Wout'].tolist()
                 coef = [item for sublist in coef for item in sublist]
+                nb_param = len(coef)+len(trained_esn.get_param(ridge_layer)['bias'])
                 
                 concat_layer = trained_esn.node_names[2]
                 concat_node = trained_esn.get_node(concat_layer)
@@ -351,6 +353,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
             if not application_param.is_training:
                 features_list = scaling['features'].columns.to_list()
                 coef = trained_esn.coef_.tolist()
+                nb_param = len(coef)+len(trained_esn.intercept_)
                     
         if reservoir_param.model == "xgb" :
             trained_esn = fit_xgboost(X_esn, Y_esn, reservoir_param)
@@ -358,9 +361,10 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
                 # get feature importance of xgboost
                 features_list = scaling['features'].columns.to_list()
                 coef = trained_esn.feature_importances_.tolist()
+                nb_param = trained_esn._Booster.trees_to_dataframe().shape[0]
         
         if not application_param.is_training:
-            importance_i = pd.DataFrame({'iter': j, 'features': features_list, 'importance': coef})
+            importance_i = pd.DataFrame({'iter': j, 'features': features_list, 'importance': coef, 'nb_param': nb_param, 'outcomeDate': current_outcomeDate})
             importance = pd.concat([importance, importance_i], ignore_index=True)
                 
         # Predict on new data
