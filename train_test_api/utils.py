@@ -327,20 +327,41 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
         reservoir_param.input_scaling = np.array(input_scaling_list)
 
     pred_esn = pd.DataFrame(columns = ["outcomeDate", "outcome", "hosp","pred","nbFeatures","model", "mintraining"])
+    importance = None
     for j in range(application_param.nb_esn):
         # Train the ESN
         if reservoir_param.model == "esn" :
             trained_esn = fit_esn(X_esn,Y_esn, reservoir_param, application_param)
+            if not application_param.is_training:
+                ridge_layer = trained_esn.node_names[3]
+                coef = trained_esn.get_param(ridge_layer)['Wout'].tolist()
+                coef = [item for sublist in coef for item in sublist]
+                
+                concat_layer = trained_esn.node_names[2]
+                concat_node = trained_esn.get_node(concat_layer)
+                reservoir_features = ["reservoir" + str(i) for i in range(0, reservoir_param.units)]
+                input_features = scaling['features'].columns.to_list()
+                if concat_node.input_dim[0] == reservoir_param.units :
+                    features_list = reservoir_features + input_features
+                elif concat_node.input_dim[1] == reservoir_param.units :
+                    features_list = input_features + reservoir_features
+        
         if reservoir_param.model == "enet" :
             trained_esn = fit_enet(X_esn, Y_esn, reservoir_param)
+            if not application_param.is_training:
+                features_list = scaling['features'].columns.to_list()
+                coef = trained_esn.coef_.tolist()
+                    
         if reservoir_param.model == "xgb" :
             trained_esn = fit_xgboost(X_esn, Y_esn, reservoir_param)
-            if not reservoir_param.is_training:
+            if not application_param.is_training:
                 # get feature importance of xgboost
-                imp_xgb = pd.DataFrame({'features': selected_columns.to_list(),
-                    'importance': trained_esn.feature_importances_.tolist()})
-                os.makedirs(output_path + job_id + '_xgb_importance', exist_ok = True)
-                imp_xgb.to_csv(output_path+ job_id + '_xgb_importance/result_job_'+ selected_files.file_name[index],index=False)
+                features_list = scaling['features'].columns.to_list()
+                coef = trained_esn.feature_importances_.tolist()
+        
+        if not application_param.is_training:
+            importance_i = pd.DataFrame({'iter': j, 'features': features_list, 'importance': coef})
+            importance = pd.concat([importance, importance_i], ignore_index=True)
                 
         # Predict on new data
         pred_j_esn = pref_on_test_set(dftest=dftest,
@@ -350,6 +371,10 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
           norm_array=norm_array,
           esn=trained_esn)
         pred_esn = pd.concat([pred_esn, pred_j_esn], ignore_index=True)
+    
+    if not application_param.is_training:
+        os.makedirs(output_path + job_id + '_importance', exist_ok = True)
+        importance.to_csv(output_path+ job_id + '_importance/result_job_'+ selected_files.file_name[index],index=False)
 
     pred_esn.to_csv(output_path+ job_id +'/result_job_'+ selected_files.file_name[index],index=False)
     
