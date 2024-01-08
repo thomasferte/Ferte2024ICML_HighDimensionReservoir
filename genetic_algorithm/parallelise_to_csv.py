@@ -189,8 +189,9 @@ def save_locked_csv(path_file, df_to_save):
             fcntl.flock(file, fcntl.LOCK_UN)
     # file did exist, write without header
     else :
-        with open(path_file, "a") as file:
+        with open(path_file, "r+") as file:
             fcntl.flock(file, fcntl.LOCK_EX)
+            file.seek(0, 2)
             df_to_save.to_csv(path_file, index=False, mode = "a", header = False)
             fcntl.flock(file, fcntl.LOCK_UN)
     
@@ -202,7 +203,7 @@ def GA_or_randomsearch(path_file, Npop):
   if(bool_file_exists):
       with open(path_file, 'r') as file:
            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-           perf_df = pd.read_csv(path_file)
+           perf_df = pd.read_csv(path_file, on_bad_lines = "skip")
            fcntl.flock(file, fcntl.LOCK_UN)
     
       perf_df = perf_df[perf_df['value'] != 'inprogress']

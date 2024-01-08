@@ -17,7 +17,7 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-99
+#SBATCH --array 0-199
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 5
 #SBATCH --mem-per-cpu=2560

@@ -5,7 +5,7 @@ import os
 
 ##### define objective function #####
 slurm_job = os.getenv('SLURM_ARRAY_JOB_ID')
-# slurm_job = "test"
+# slurm_job = "2536874"
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
 # slurm_scenari = "GeneticSingleIs_GA_1000"
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')

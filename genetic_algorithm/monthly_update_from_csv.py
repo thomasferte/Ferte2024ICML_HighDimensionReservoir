@@ -10,7 +10,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     print("get file perf = " + previous_perf_path)
     with open(previous_perf_path, 'r') as file:
            fcntl.flock(file, fcntl.LOCK_EX)  # Acquire an exclusive lock
-           df_previous_perf = pd.read_csv(previous_perf_path).dropna()
+           df_previous_perf = pd.read_csv(previous_perf_path, on_bad_lines = "skip").dropna()
            fcntl.flock(file, fcntl.LOCK_UN)
     top_trials = df_previous_perf.sort_values('value', ascending=False).tail(Npop)
     top_trials["value"] = "todo"
