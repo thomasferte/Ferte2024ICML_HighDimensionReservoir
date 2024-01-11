@@ -140,7 +140,7 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
     fct_value = perform_full_training(
       path=data_path,
       min_date_eval=min_date_eval,
-      application_param=appParam(mintraining=365, nb_esn= nb_esn, is_training=is_training,
+      application_param=appParam(mintraining=1000, nb_esn= nb_esn, is_training=is_training,
                                 vecFeaturesEpi=features),
       reservoir_param=reservoirParam(
         units=units,

@@ -36,6 +36,6 @@ TestAlgorithm_for_csv(
   study_path = file_i,
   nb_best_trials = nb_best_trials,
   nb_esn = nb_esn,
-  lsTraining = [365],
+  lsTraining = [1000],
   min_date_eval=min_date_eval
   )
