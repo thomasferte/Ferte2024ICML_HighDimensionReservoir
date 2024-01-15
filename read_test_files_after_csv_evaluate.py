@@ -44,7 +44,11 @@ dfres = pd.concat(df_list, ignore_index=True)
 
 # Save the resulting dataframe as an RDS file
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-dfres.to_csv("output/" + folder_i + "_combined.csv", index = False)
+outdir = folder_path + folder_i + "/results/"
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
+
+dfres.to_csv(outdir + folder_i + "_combined.csv", index = False)
 
 df_list = []
 # Iterate over the files
@@ -66,6 +70,6 @@ dfres = pd.concat(df_list, ignore_index=True)
 
 # Save the resulting dataframe as an RDS file
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-dfres.to_csv("output/" + folder_i + "_importance_combined.csv", index = False)
+dfres.to_csv(outdir + folder_i + "_importance_combined.csv", index = False)
 
 
