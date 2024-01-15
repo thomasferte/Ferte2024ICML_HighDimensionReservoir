@@ -436,7 +436,7 @@ def perform_full_training(path, application_param, reservoir_param, job_id,outpu
     files['date'] = pd.to_datetime(files.file_name.str.split('.csv').str[0],format='%Y%m%d')
     files = files.sort_values(by='date').reset_index()
     # min_date_eval = '2021-03-01'
-    min_date_eval = datetime.strptime(min_date_eval, '%Y-%m-%d') + timedelta(days=forecast_days)
+    min_date_eval = datetime.strptime(min_date_eval, '%Y-%m-%d') - timedelta(days=forecast_days)
     # Selection by date
     if application_param.is_training:
         selected_files= files[files['date']<min_date_eval]
