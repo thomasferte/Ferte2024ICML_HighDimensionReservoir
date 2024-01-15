@@ -5,7 +5,7 @@ import os
 
 ##### define objective function #####
 slurm_job = os.getenv('SLURM_ARRAY_JOB_ID')
-# slurm_job = "2536874"
+# slurm_job = "2548645"
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
 # slurm_scenari = "GeneticSingleIs_GA_1000"
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')
@@ -48,7 +48,8 @@ csv_sampler(
   array_id = str(array_id),
   Npop=Npop,
   Ne=Ne,
-  nb_trials=nb_trials_first
+  nb_trials=nb_trials_first,
+  mintraining = 1000
   )
 
 print("------- monthly update ------------")
@@ -61,5 +62,6 @@ evolutive_hp_csv(
   scenari=slurm_scenari,
   Npop = Npop,
   Ne = Ne,
-  nb_trials = nb_trials_update
+  nb_trials = nb_trials_update,
+  mintraining = 1000
 )

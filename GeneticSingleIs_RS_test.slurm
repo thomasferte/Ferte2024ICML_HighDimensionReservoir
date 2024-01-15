@@ -42,6 +42,8 @@ echo "#############################"
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
+mkdir -p /beegfs/tferte/tempfiles/GeneticSingleIs_RS/
+export TMPDIR=/beegfs/tferte/tempfiles/GeneticSingleIs_RS/
 
 # cd /gpfs/home/tferte910e/high_dimension_reservoir
 # source /gpfs/home/tferte910e/predictcovid_api_python/testenv/bin/activate

@@ -2,7 +2,7 @@ import pandas as pd
 from flock import Flock
 from genetic_algorithm.parallelise_to_csv import *
 
-def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id, units = 500):
+def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path, Npop, scenari, array_id, units = 500, mintraining = 365):
     print("get features")
     features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
     
@@ -97,6 +97,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
                     params = params,
                     features = features,
                     data_path = data_path,
+                    mintraining = mintraining,
                     job_id = job_id_to_do+"_at_" + date + "_by_" + array_id,
                     output_path=perf_folder+"csv_parallel/"+date+"/"
                   )
@@ -118,7 +119,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     
     return new_perf_file
 
-def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d'), units = 500):
+def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d'), units = 500, mintraining = 365):
     ##### get all dates files
     files = pd.DataFrame(glob.glob(data_path + '*.csv'),columns = ['full_path'])
     files['file_name'] = files.full_path.str.split(data_path,n=1).str[-1]
@@ -148,7 +149,8 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
                         data_path=data_path,
                         Npop=Npop,
                         array_id = array_id,
-                        scenari=scenari
+                        scenari=scenari,
+                        mintraining = mintraining
                         )
                     trial_ok = 0
                 except pd.errors.EmptyDataError:
@@ -169,7 +171,8 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
                         array_id = array_id,
                         Npop=Npop,
                         Ne=Ne,
-                        nb_trials=nb_trials
+                        nb_trials=nb_trials,
+                        mintraining = mintraining
                         )
                     trial_sampler_ok = 0
                 except pd.errors.EmptyDataError:

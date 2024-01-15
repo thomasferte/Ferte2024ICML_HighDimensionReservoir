@@ -7,8 +7,7 @@
 #SBATCH -J COMPILECSV
 
 # walltime (hh:mm::ss)
-#SBATCH -t 05:00:00
-
+#SBATCH -t 01:00:00
 
 # change working directory
 # SBATCH --chdir=.
@@ -17,7 +16,7 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-1
+#SBATCH --array 0-4
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 1
 #SBATCH --mem-per-cpu=3560
