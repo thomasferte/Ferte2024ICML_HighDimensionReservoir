@@ -5,6 +5,9 @@ library(ggplot2)
 source(file = "script/FctCleanFeaturesName.R")
 set.seed(1)
 
+path_results <- "results/monthly_from_scratch/"
+results_save <- "results/monthly_from_scratch/"
+
 ########## NB FEATURES #####
 read.csv("data_obfuscated/20220117.csv") %>%
   select(-outcome, -outcomeDate, -START_DATE) %>%
@@ -23,7 +26,7 @@ df_data %>%
 
 ########## FORECAST #####
 ### 1) Load data
-path_predictions <- "results/predictions"
+path_predictions <- paste0(path_results, "predictions/")
 ls_files <- list.files(path_predictions)
 ls_files_full <- list.files(path_predictions, full.names = TRUE)
 names(ls_files_full) <- gsub(ls_files, pattern = "_combined.csv", replacement = "")
@@ -117,7 +120,7 @@ plot_repeated_reservoir <- dfRepeatReservoir %>%
   labs(x = "Nb of Reservoir",
        y = "MAE (95% CI)")
 
-ggsave("results/figures/plot_repeated_reservoir.pdf",
+ggsave(paste0(results_save, "plot_repeated_reservoir.pdf"),
        plot = plot_repeated_reservoir,
        width = 4,
        height = 4)
@@ -146,6 +149,7 @@ df_individual_model <- df_all %>%
                                     "Hosp t+14" = "hosp"))
 
 plot_figure_performance_no_update <- df_individual_model %>%
+  filter(outcomeDate >= as.Date("2021-04-12")) %>%
   filter(name %in% c("Hosp t+14",
                      "Observed",
                      "Reservoir FS (GA)",
@@ -161,7 +165,7 @@ plot_figure_performance_no_update <- df_individual_model %>%
        color = "") +
   guides(color = guide_legend(ncol = 2))
 
-ggsave("results/figures/plot_figure_performance_no_update.pdf",
+ggsave(paste0(results_save, "plot_figure_performance_no_update.pdf"),
        plot = plot_figure_performance_no_update,
        width = 4,
        height = 5)
@@ -188,14 +192,14 @@ plot_figure_performance_all <- df_all %>%
   guides(color = guide_legend(ncol = 3)) +
   facet_wrap(model ~ ., ncol = 2)
 
-ggsave("results/figures/plot_figure_performance_all.pdf",
+ggsave(paste0(results_save, "plot_figure_performance_all.pdf"),
        plot = plot_figure_performance_all,
        width = 8)
 
 ########## HYPER-PARAMETERS #####
-path_hp <- "results/hyperparameter"
+path_hp <- paste0(path_results, "hyperparameter")
 ls_files_full <- list.files(path_hp, full.names = TRUE, recursive = TRUE)
-names(ls_files_full) <- gsub(ls_files_full, pattern = "results/hyperparameter/", replacement = "")
+names(ls_files_full) <- gsub(ls_files_full, pattern = paste0(path_hp, "/"), replacement = "")
 
 numeric_hp <- c(
   "ridge",
@@ -236,7 +240,8 @@ df_all_hp <- lapply(ls_files_full,
          date = gsub(pattern = ".csv", x = date, replacement = ""),
          date = as.Date(date),
          date = if_else(is.na(date), as.Date("2021-03-01"), date),
-         last_used_observation = date + 2*14) %>%
+         # last_used_observation = date + 2*14) %>%
+         last_used_observation = date) %>%
   filter(last_used_observation < as.Date("2022-01-17"),
          value != 1000)
 
@@ -296,7 +301,7 @@ ls_hpnum_plots <- df_all_hp_best40_numeric %>%
 
 plot_all_hp <- ggpubr::ggarrange(plotlist = ls_hpnum_plots, common.legend = TRUE, ncol = 2, nrow = 3, legend = "bottom")
 
-ggsave("results/figures/plot_all_hp.pdf",
+ggsave(paste0(results_save, "plot_all_hp.pdf"),
        plot = plot_all_hp,
        width = 10, height = 12)
 
@@ -345,7 +350,7 @@ dfGeneticSinglIS_GA_visu %>%
   group_by(HP_name) %>%
   summarise(min(HP_value), max(HP_value))
 
-ggsave("results/figures/plot_genetic_algo.pdf",
+ggsave(paste0(results_save, "plot_genetic_algo.pdf"),
        plot = plot_genetic_algo,
        useDingbats = TRUE,
        width = 5)
@@ -393,8 +398,8 @@ df_all_hp_best40_categorical %>%
   })
 
 ##### elastic-net and xgb importance when updating hyperparameter monthly for comparison
-list_importance_enet_xgb <- list("Elastic-net" = "results/importance/enet_pred_RS_importance_combined.csv",
-                                 "XGBoost" = "results/importance/xgb_pred_RS_importance_combined.csv")
+list_importance_enet_xgb <- list("Elastic-net" = paste0(path_results, "importance/", "enet_pred_RS_importance_combined.csv"),
+                                 "XGBoost" = paste0(path_results, "importance/", "xgb_pred_RS_importance_combined.csv"))
 
 lapply(names(list_importance_enet_xgb),
        function(x){
@@ -432,14 +437,14 @@ lapply(names(list_importance_enet_xgb),
          return()
        })
 
-ggsave("results/figures/plot_feature_imp_RCGA.pdf",
+ggsave(paste0(results_save, "plot_feature_imp_RCGA.pdf"),
        plot = ls_hpcat_plots$`Reservoir FS (GA)`,
        width = 6, height = 5)
 
 
 plot_feature_imp <- ggpubr::ggarrange(plotlist = ls_hpcat_plots, ncol = 2, nrow = 3, legend = "bottom")
 
-ggsave("results/figures/plot_feature_imp.pdf",
+ggsave(paste0(results_save, "plot_feature_imp.pdf"),
        plot = plot_feature_imp,
        width = 12, height = 12)
 
@@ -507,7 +512,7 @@ plot_RCGA_noupdate_by_lr <- df_by_lr %>%
        color = "") +
   guides(color = guide_legend(ncol = 2))
 
-ggsave("results/figures/plot_RCGA_noupdate_by_lr.pdf",
+ggsave(paste0(results_save, "plot_RCGA_noupdate_by_lr.pdf"),
        plot = plot_RCGA_noupdate_by_lr,
        height = 4,
        width = 8)
@@ -572,8 +577,9 @@ plot_reservoir_vs_input_importance <- df_imp_reservoir %>%
   ggplot(mapping = aes(x = outcomeDate, y = importance, group = rank_among_raws, color = rank_among_raws)) +
   geom_line() +
   scale_color_viridis_d(direction = -1) +
-  scale_y_reverse(breaks = c(1, 50, 100, 200, 300, 400),
-                  labels = c("1st", "50th", "100th", "200th", "300th", "400th")) +
+  scale_y_reverse(limits = c(700,1),
+                  breaks = c(1, 50, seq(100, 700, by = 100)),
+                  labels = c("1st", "50th", paste0(seq(100, 700, by = 100), "th"))) +
   theme_minimal() +
   labs(y = "Importance rank according to output layer",
        x = "Date",
@@ -581,7 +587,7 @@ plot_reservoir_vs_input_importance <- df_imp_reservoir %>%
   theme(legend.position = "bottom") +
   guides(color=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave("results/figures/plot_reservoir_vs_input_importance.pdf",
+ggsave(paste0(results_save, "plot_reservoir_vs_input_importance.pdf"),
        plot = plot_reservoir_vs_input_importance,
        width = 5, height = 5)
 

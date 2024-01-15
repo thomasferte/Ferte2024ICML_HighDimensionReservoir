@@ -11,3 +11,5 @@ myenv/*
 output/*
 std_err/*
 std_out/*
+article/*
+results/*
