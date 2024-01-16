@@ -7,8 +7,7 @@ array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
 # Define folder_path and folder_list
 folder_path = "/beegfs/tferte/output/"
-folder_list = ["GeneticSingleIs_GA", "GeneticSingleIs_RS", "SingleIs_GA", "enet_pred_RS", "xgb_pred_RS"]
-folder_list = ["enet_pred_RS", "xgb_pred_RS", "GeneticSingleIs_GA", "SingleIs_GA", "GeneticSingleIs_RS", "GeneticSingleIs_GA_10esn"]
+folder_list = ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA" "GeneticSingleIs_RS", "SingleIs_GA", "enet_pred_RS", "xgb_pred_RS"]
 
 # Get the folder_i based on array_id
 folder_i = folder_list[int(array_id)]

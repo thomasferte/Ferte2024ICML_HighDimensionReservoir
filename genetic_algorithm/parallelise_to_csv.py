@@ -11,7 +11,7 @@ from shutil import rmtree
 
 ##### functions
 
-def define_hp_distribution(features, multiple_is = False, bin_features = False, enet = False, is_feature_selection = False, seed = False):
+def define_hp_distribution(features, multiple_is = False, bin_features = False, enet = False, is_feature_selection = False, seed = False, pca = False):
     # baseline dataframe    
     hp_df = ({
         'hp':["ridge","spectral_radius","leaking_rate"],
@@ -42,6 +42,9 @@ def define_hp_distribution(features, multiple_is = False, bin_features = False, 
     
     if(seed):
         hp_df.loc[len(hp_df)] = ["seed", "int", 1, 1e6, False]
+    
+    if(pca):
+        hp_df.loc[len(hp_df)] = ["pca", "num", 0.1, 0.9999999, True]
     
     return hp_df
 
@@ -131,6 +134,11 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         if not bool(input_scaling) :
             input_scaling = None
     
+    if("pca" in params.keys()):
+        pca = float(params["pca"])
+    else :
+        pca = 0
+    
     bin_filtered_dict = {key: value for key, value in params.items() if key.endswith("bin")}
     if(len(bin_filtered_dict) > 0):
         bin_features = bin_filtered_dict
@@ -158,7 +166,8 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         learning_rate = learning_rate,
         subsample = subsample,
         colsample_bytree = colsample_bytree,
-        l1_ratio = l1_ratio),
+        l1_ratio = l1_ratio,
+        pca = pca),
       job_id=job_id,
       output_path=output_path)
     
@@ -219,7 +228,7 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
@@ -228,6 +237,7 @@ def scenari_define_hp_distribution(scenari, features):
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
+    pca = scenari in ["GeneticSingleIs_GA_PCA"]
     
     if scenari in ["xgb_pred_GA", "xgb_pred_RS"] :
         hp_df = ({
@@ -254,14 +264,15 @@ def scenari_define_hp_distribution(scenari, features):
           bin_features=bin_features,
           enet = enet,
           is_feature_selection = is_feature_selection,
-          seed = seed)
+          seed = seed,
+          pca = pca)
     
     return hp_df
 
 def features_nbesn_optimizer_from_scenari(scenari):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
-    "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
     "SingleIs_GA", "SingleIs_RS"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
@@ -283,7 +294,7 @@ def features_nbesn_optimizer_from_scenari(scenari):
     ### set number of repetition
     if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS"] :
         nb_esn = 1
-    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"] :
+    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"] :
         nb_esn = 3
     elif scenari in ["GeneticSingleIs_GA_10esn"] :
         nb_esn = 10
