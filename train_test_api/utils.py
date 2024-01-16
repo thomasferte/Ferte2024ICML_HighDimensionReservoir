@@ -12,6 +12,7 @@ import time
 from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
+from sklearn.decomposition import PCA
 
 
 # Reservoir parameters
@@ -49,7 +50,8 @@ nb_features : (int, default to 0)
                  input_scaling = 2000, leaking_rate = 1 , bin_features = 0, activation = "tanh", seed = None ,inputBias = True,
                  model = "esn",
                  n_estimators = 10, max_depth = 10, learning_rate = 0.1, subsample = 0.3, colsample_bytree = 0.3,
-                 l1_ratio = 0.5):
+                 l1_ratio = 0.5,
+                 pca = 0):
         # define model
         self.model = model
         # reservoir hp
@@ -75,6 +77,8 @@ nb_features : (int, default to 0)
         # enet hp
         self.l1_ratio = l1_ratio
         self.alpha = alpha
+        # pca
+        self.pca = pca
         
         # chose between selection by enet or genetic
         if nb_features != 0 and alpha != 0: 
@@ -278,9 +282,11 @@ def fit_esn(X,Y, reservoir_param, application_param, vec_coef_enet = 0):
     esn.fit(X,Y, warmup = reservoir_param.warmup)
     return esn
 
-def pref_on_test_set(dftest, selected_columns, reservoir_param , application_param , norm_array, esn):
+def pref_on_test_set(dftest, selected_columns, reservoir_param , application_param , norm_array, esn, pca_model = None):
     dftest_selected = dftest[selected_columns]
     X_esn, Y_esn, scaling = standardise_data_for_ens(dftest_selected, norm_array )
+    if pca_model != None :
+        X_esn = pca_model.transform(X_esn)
     if reservoir_param.model == "esn" :
         vecPred = esn.run(X_esn , reset = True)
     if reservoir_param.model in ["enet","xgb"] :
@@ -329,8 +335,17 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
     pred_esn = pd.DataFrame(columns = ["outcomeDate", "outcome", "hosp","pred","nbFeatures","model", "mintraining"])
     importance = None
     current_outcomeDate = dftest['outcomeDate'].tail(1).to_list()[0]
+    
+    # PCA if needed
+    if reservoir_param.pca != 0 :
+            pca = PCA(reservoir_param.pca)
+            pca_model = pca.fit(X_esn)
+            X_esn = pca_model.transform(X_esn)
+    else :
+        pca_model = None
+    
     for j in range(application_param.nb_esn):
-        # Train the ESN
+        ### Train the ESN
         if reservoir_param.model == "esn" :
             trained_esn = fit_esn(X_esn,Y_esn, reservoir_param, application_param)
             if not application_param.is_training:
@@ -342,7 +357,10 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
                 concat_layer = trained_esn.node_names[2]
                 concat_node = trained_esn.get_node(concat_layer)
                 reservoir_features = ["reservoir" + str(i) for i in range(0, reservoir_param.units)]
-                input_features = scaling['features'].columns.to_list()
+                if reservoir_param.pca != 0:
+                    input_features = ["pca" + str(i) for i in range(0, np.shape(X_esn)[1])]
+                else :
+                    input_features = scaling['features'].columns.to_list()
                 if concat_node.input_dim[0] == reservoir_param.units :
                     features_list = reservoir_features + input_features
                 elif concat_node.input_dim[1] == reservoir_param.units :
@@ -373,7 +391,8 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
           reservoir_param=reservoir_param ,
           application_param=application_param ,
           norm_array=norm_array,
-          esn=trained_esn)
+          esn=trained_esn,
+          pca_model = pca_model)
         pred_esn = pd.concat([pred_esn, pred_j_esn], ignore_index=True)
     
     if not application_param.is_training:
