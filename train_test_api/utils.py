@@ -439,7 +439,7 @@ def perform_full_training(path, application_param, reservoir_param, job_id,outpu
     min_date_eval = datetime.strptime(min_date_eval, '%Y-%m-%d') - timedelta(days=forecast_days)
     # Selection by date
     if application_param.is_training:
-        selected_files= files[files['date']<min_date_eval]
+        selected_files= files[files['date']<=min_date_eval]
     else:
         selected_files= files[files['date']>=min_date_eval]
     if lsFiles != None:
