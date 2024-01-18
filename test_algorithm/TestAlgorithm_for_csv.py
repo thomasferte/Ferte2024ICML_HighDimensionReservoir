@@ -53,7 +53,7 @@ def TestAlgorithm_for_csv(
             features = json.load(fp)
     
     # Get all the trials as a DataFrame and remove trials with missing values
-    trials_df = pd.read_csv(study_path).dropna()
+    trials_df = pd.read_csv(study_path, on_bad_lines = "skip").dropna()
     
     # Sort the trials based on the objective value in descending order and get top trials
     top_10_trials = trials_df.sort_values('value', ascending=False).tail(nb_best_trials)

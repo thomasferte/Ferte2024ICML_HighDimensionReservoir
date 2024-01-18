@@ -5,7 +5,7 @@ import os
 
 ##### define objective function #####
 slurm_job = os.getenv('SLURM_ARRAY_JOB_ID')
-# slurm_job = "2536874"
+# slurm_job = "2536874"
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
 # slurm_scenari = "GeneticSingleIs_GA_1000"
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')
@@ -18,7 +18,7 @@ first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
 if slurm_scenari in ["GeneticSingleIs_GA_1000"]:
-    units = 1000
+    units = 2000
 else :
     units = 500
 
@@ -33,9 +33,9 @@ else :
     nb_trials_first = 3200
     nb_trials_update = 1200
 
-# Npop = 2
-# Ne = 1
-# nb_trials_first = 3
+# Npop = 2
+# Ne = 1
+# nb_trials_first = 3
 # nb_trials_update = 3
 
 print("------- first optimisation ------------")
@@ -51,15 +51,16 @@ csv_sampler(
   nb_trials=nb_trials_first
   )
 
-print("------- monthly update ------------")
-evolutive_hp_csv(
-  units = units,
-  array_id = str(array_id),
-  perf_folder = folder_path,
-  first_perf_file = first_perf_file,
-  data_path = data_path,
-  scenari=slurm_scenari,
-  Npop = Npop,
-  Ne = Ne,
-  nb_trials = nb_trials_update
-)
+if slurm_scenari not in ["GeneticSingleIs_GA_1000"]:
+    print("------- monthly update ------------")
+    evolutive_hp_csv(
+      units = units,
+      array_id = str(array_id),
+      perf_folder = folder_path,
+      first_perf_file = first_perf_file,
+      data_path = data_path,
+      scenari=slurm_scenari,
+      Npop = Npop,
+      Ne = Ne,
+      nb_trials = nb_trials_update
+    )
