@@ -23,7 +23,7 @@ df_data %>%
 
 ########## FORECAST #####
 ### 1) Load data
-path_predictions <- "results/predictions"
+path_predictions <- "results/final_prediction/predictions/"
 ls_files <- list.files(path_predictions)
 ls_files_full <- list.files(path_predictions, full.names = TRUE)
 names(ls_files_full) <- gsub(ls_files, pattern = "_combined.csv", replacement = "")
@@ -32,11 +32,15 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
   bind_rows(.id = "model") %>%
   mutate(model = factor(model,
                         levels = c("GeneticSingleIs_GA",
+                                   "GeneticSingleIs_GA_1000anteriorite",
+                                   "GeneticSingleIs_GA_PCA",
                                    "GeneticSingleIs_RS",
                                    "SingleIs_GA",
                                    "enet_pred_RS",
                                    "xgb_pred_RS"),
                         labels = c("Reservoir FS (GA)",
+                                   "Reservoir FS (GA) all anteriority",
+                                   "Reservoir FS (GA - PCA)",
                                    "Reservoir FS (RS)",
                                    "Reservoir no FS (GA)",
                                    "Elastic-net (RS)",
@@ -45,7 +49,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
 
 df_all <- df_all_temp %>% slice_min(hp_date) %>% mutate(update = "No") %>%
   bind_rows(df_all_temp %>% slice_max(hp_date) %>% mutate(update = "Yes")) %>%
-  ungroup()
+  ungroup() %>%
+  filter(!(model == "Reservoir FS (GA) all anteriority" & update == "Yes"))
 
 ### 2) Performance dataframe
 df_perf <- df_all %>%
@@ -68,7 +73,14 @@ df_perf <- df_all %>%
             RE = median(RE, na.rm = TRUE),
             RE_baseline = median(RE_baseline, na.rm = TRUE))
 
-# df_perf %>% knitr::kable(format = "latex", booktabs = TRUE, digits = 2)
+# df_all %>%
+#   group_by(model) %>%
+#   summarise(min = min(outcomeDate),
+#             max = max(outcomeDate),
+#             len = length(unique(outcomeDate)),
+#             len2 = length(outcomeDate))
+
+df_perf %>% knitr::kable(format = "latex", booktabs = TRUE, digits = 2)
 
 ### ESN number of model needed
 nboot <- 250
@@ -117,7 +129,7 @@ plot_repeated_reservoir <- dfRepeatReservoir %>%
   labs(x = "Nb of Reservoir",
        y = "MAE (95% CI)")
 
-ggsave("results/figures/plot_repeated_reservoir.pdf",
+ggsave("results/final_figures/plot_repeated_reservoir.pdf",
        plot = plot_repeated_reservoir,
        width = 4,
        height = 4)
@@ -161,7 +173,7 @@ plot_figure_performance_no_update <- df_individual_model %>%
        color = "") +
   guides(color = guide_legend(ncol = 2))
 
-ggsave("results/figures/plot_figure_performance_no_update.pdf",
+ggsave("results/final_figures/plot_figure_performance_no_update.pdf",
        plot = plot_figure_performance_no_update,
        width = 4,
        height = 5)
@@ -188,14 +200,14 @@ plot_figure_performance_all <- df_all %>%
   guides(color = guide_legend(ncol = 3)) +
   facet_wrap(model ~ ., ncol = 2)
 
-ggsave("results/figures/plot_figure_performance_all.pdf",
+ggsave("results/final_figures/plot_figure_performance_all.pdf",
        plot = plot_figure_performance_all,
        width = 8)
 
 ########## HYPER-PARAMETERS #####
-path_hp <- "results/hyperparameter"
+path_hp <- "results/final_prediction/hyperparameter"
 ls_files_full <- list.files(path_hp, full.names = TRUE, recursive = TRUE)
-names(ls_files_full) <- gsub(ls_files_full, pattern = "results/hyperparameter/", replacement = "")
+names(ls_files_full) <- gsub(ls_files_full, pattern = paste0(path_hp, "/"), replacement = "")
 
 numeric_hp <- c(
   "ridge",
@@ -207,7 +219,8 @@ numeric_hp <- c(
   "max_depth",
   "learning_rate",
   "subsample",
-  "colsample_bytree"
+  "colsample_bytree",
+  "pca"
 )
 
 df_all_hp <- lapply(ls_files_full,
@@ -226,19 +239,24 @@ df_all_hp <- lapply(ls_files_full,
                         levels = c("hp_GeneticSingleIs_GA",
                                    "hp_GeneticSingleIs_RS",
                                    "hp_SingleIs_GA",
+                                   "hp_GeneticSingleIs_GA_1000anteriorite",
+                                   "hp_GeneticSingleIs_GA_PCA",
                                    "hp_enet_pred_RS",
                                    "hp_xgb_pred_RS"),
                         labels = c("Reservoir FS (GA)",
                                    "Reservoir FS (RS)",
                                    "Reservoir no FS (GA)",
+                                   "Reservoir FS (GA) all anteriority",
+                                   "Reservoir FS (GA - PCA)",
                                    "Elastic-net (RS)",
                                    "XGB (RS)")),
          date = gsub(pattern = ".csv", x = date, replacement = ""),
          date = as.Date(date),
          date = if_else(is.na(date), as.Date("2021-03-01"), date),
-         last_used_observation = date + 2*14) %>%
+         last_used_observation = date) %>%
   filter(last_used_observation < as.Date("2022-01-17"),
-         value != 1000)
+         value != 1000) %>%
+  filter(model != "Reservoir FS (GA) all anteriority")
 
 ## save best model most important features
 df_all_hp %>%
@@ -256,7 +274,6 @@ df_all_hp %>%
 df_all_hp_best40 <- df_all_hp %>%
   group_by(model, last_used_observation) %>%
   slice_min(value, n = 40)
-
 ##### show numeric hyperparameters
 df_all_hp_best40_numeric <- df_all_hp_best40 %>%
   select(all_of(c("job_id", "model", "date", "value", numeric_hp))) %>%
@@ -275,12 +292,22 @@ ls_hpnum_plots <- df_all_hp_best40_numeric %>%
       mutate(rank = dense_rank(value),
              rank_factor = if_else(rank == 1, "Best", "Other")) %>%
       ungroup() %>%
-      mutate(last_used_observation = as.factor(last_used_observation)) %>%
+      mutate(last_used_observation = last_used_observation) %>%
       arrange(desc(rank_factor)) %>%
       ggplot(mapping = aes(y = value, x = HP_value, fill = last_used_observation, size = rank_factor, color = rank_factor)) +
       geom_point(shape = 21) +
       facet_wrap(HP_name ~ ., scales = "free_x") +
-      scale_fill_viridis_d(direction = -1) +
+      scale_fill_viridis_c(direction = -1,
+                           labels = scales::date_format("%Y-%m"),
+                           trans = "date",
+                           breaks = as.Date(c("2021-03-01",
+                                              "2021-05-01",
+                                              "2021-07-01",
+                                              "2021-09-01",
+                                              "2021-11-01",
+                                              "2022-01-01")),
+                           limits = as.Date(c("2021-03-01",
+                                              "2022-01-01"))) +
       scale_size_manual(values = c(4,2)) +
       scale_color_manual(values = c("red", "#AAAAAA00")) +
       scale_x_log10() +
@@ -294,9 +321,9 @@ ls_hpnum_plots <- df_all_hp_best40_numeric %>%
       return()
   })
 
-plot_all_hp <- ggpubr::ggarrange(plotlist = ls_hpnum_plots, common.legend = TRUE, ncol = 2, nrow = 3, legend = "bottom")
+plot_all_hp <- ggpubr::ggarrange(plotlist = ls_hpnum_plots, common.legend = TRUE, ncol = 2, nrow = 3, legend = "right")
 
-ggsave("results/figures/plot_all_hp.pdf",
+ggsave("results/final_figures/plot_all_hp.pdf",
        plot = plot_all_hp,
        width = 10, height = 12)
 
@@ -340,12 +367,12 @@ plot_genetic_algo <- ggplot(data = dfGeneticSinglIS_GA_visu,
        y = "MAE",
        color = "")
 
-dfGeneticSinglIS_GA_visu %>%
-  filter(last_used_observation == "2021-12-30", rank_factor == "Best 40") %>%
-  group_by(HP_name) %>%
-  summarise(min(HP_value), max(HP_value))
+# dfGeneticSinglIS_GA_visu %>%
+#   filter(last_used_observation == "2022-01-01", rank_factor == "Best 40") %>%
+#   group_by(HP_name) %>%
+#   summarise(min(HP_value), max(HP_value))
 
-ggsave("results/figures/plot_genetic_algo.pdf",
+ggsave("results/final_figures/plot_genetic_algo.pdf",
        plot = plot_genetic_algo,
        useDingbats = TRUE,
        width = 5)
@@ -380,7 +407,9 @@ df_all_hp_best40_categorical %>%
       filter(HP_name %in% vec_features_i) %>%
       ggplot(mapping = aes(x = last_used_observation, color = freq_select, y = HP_name)) +
       geom_point() +
-      scale_color_viridis_c(direction = -1) +
+      scale_color_distiller(breaks = seq(0,1,by=0.2),
+                            limits = c(0,1),
+                            direction = 1) +
       theme_minimal() +
       labs(x = "Update date",
            y = "",
@@ -393,8 +422,8 @@ df_all_hp_best40_categorical %>%
   })
 
 ##### elastic-net and xgb importance when updating hyperparameter monthly for comparison
-list_importance_enet_xgb <- list("Elastic-net" = "results/importance/enet_pred_RS_importance_combined.csv",
-                                 "XGBoost" = "results/importance/xgb_pred_RS_importance_combined.csv")
+list_importance_enet_xgb <- list("Elastic-net" = "results/final_prediction/importance/enet_pred_RS_importance_combined.csv",
+                                 "XGBoost" = "results/final_prediction/importance/xgb_pred_RS_importance_combined.csv")
 
 lapply(names(list_importance_enet_xgb),
        function(x){
@@ -420,7 +449,7 @@ lapply(names(list_importance_enet_xgb),
                   features = forcats::fct_reorder(features, abs(importance))) %>%
            ggplot(mapping = aes(x = last_used_observation, color = importance, y = features)) +
            geom_point() +
-           scale_color_viridis_c(direction = -1) +
+           scale_color_distiller(direction = 1) +
            theme_minimal() +
            labs(x = "Update date",
                 y = "",
@@ -432,21 +461,21 @@ lapply(names(list_importance_enet_xgb),
          return()
        })
 
-ggsave("results/figures/plot_feature_imp_RCGA.pdf",
+ggsave("results/final_figures/plot_feature_imp_RCGA.pdf",
        plot = ls_hpcat_plots$`Reservoir FS (GA)`,
        width = 6, height = 5)
 
 
 plot_feature_imp <- ggpubr::ggarrange(plotlist = ls_hpcat_plots, ncol = 2, nrow = 3, legend = "bottom")
 
-ggsave("results/figures/plot_feature_imp.pdf",
+ggsave("results/final_figures/plot_feature_imp.pdf",
        plot = plot_feature_imp,
        width = 12, height = 12)
 
 ############# explore why hp update did not work for GA
 df_leaking_rate_RCGA <- df_all_hp %>%
   filter(model == "Reservoir FS (GA)") %>%
-  mutate(hp_date = date + 14) %>%
+  mutate(hp_date = date+14) %>%
   select(job_id, leaking_rate, hp_date) %>% 
   distinct()
 
@@ -455,9 +484,9 @@ df_by_lr <- df_all %>%
   mutate(job_id = gsub(x = trial, pattern = "^trial_|_train365$", replacement = ""),
          hp_date = as.Date(hp_date)) %>%
   left_join(df_leaking_rate_RCGA, by = c("job_id", "hp_date")) %>%
-  mutate(leaking_rate = factor(leaking_rate < 1e-2,
+  mutate(leaking_rate = factor(leaking_rate < 1e-3,
                                levels = c(T, F),
-                               labels = c("< 1e-2", "> 1e-2")),
+                               labels = c("< 1e-3", "> 1e-3")),
          outcomeDate = as.Date(outcomeDate))
 
 df_perf_by_lr <- df_by_lr %>%
@@ -491,12 +520,12 @@ plot_RCGA_noupdate_by_lr <- df_by_lr %>%
   mutate(name = factor(name,
                        levels = c("outcome",
                                   "hosp",
-                                  "leaking rate < 1e-2",
-                                  "leaking rate > 1e-2"),
+                                  "leaking rate < 1e-3",
+                                  "leaking rate > 1e-3"),
                        labels = c("Observed",
                                   "Hosp t+14",
-                                  "leaking rate < 1e-2",
-                                  "leaking rate > 1e-2"))) %>%
+                                  "leaking rate < 1e-3",
+                                  "leaking rate > 1e-3"))) %>%
   ggplot(mapping = aes(x = outcomeDate, y = value, color = name)) +
   geom_line() +
   scale_color_manual(values = c("black", "darkgrey", "#FB8500", "#219EBC")) +
@@ -507,13 +536,15 @@ plot_RCGA_noupdate_by_lr <- df_by_lr %>%
        color = "") +
   guides(color = guide_legend(ncol = 2))
 
-ggsave("results/figures/plot_RCGA_noupdate_by_lr.pdf",
+ggsave("results/final_figures/plot_RCGA_noupdate_by_lr.pdf",
        plot = plot_RCGA_noupdate_by_lr,
        height = 4,
        width = 8)
 
 ############# computing time and number of hp
-df_time_hp <- df_all_hp %>%
+
+### redo on local machine
+df_time_hp <- df_all_hp_best40 %>%
   slice_min(date) %>%
   filter(model %in% c("Reservoir FS (RS)",
                       "Elastic-net (RS)",
@@ -538,7 +569,7 @@ df_time_hp %>%
   filter(name == "nb_features") %>%
   reframe(quantile(value, probs = c(0.25, 0.5, 0.75)))
 
-ggsave("results/figures/plot_time_hp.pdf",
+ggsave("results/final_figures/plot_time_hp.pdf",
        plot = plot_time_hp,
        useDingbats = TRUE,
        height = 7,
@@ -552,43 +583,78 @@ df_all_hp %>%
             q3 = quantile(time_seconds, 0.75))
 
 ############# reservoir vs raw features importance 
-df_imp_reservoir <- data.table::fread("results/importance/GeneticSingleIs_GA_importance_combined.csv") %>%
-  mutate(last_used_observation = hp_date + 14) %>%
-  slice_min(last_used_observation) %>%
-  group_by(outcomeDate, trial) %>%
-  mutate(rank = dense_rank(desc(abs(importance)))) %>%
-  filter(!grepl(features, pattern = "reservoir")) %>%
-  group_by(last_used_observation, features, outcomeDate) %>%
-  summarise(importance = mean(rank),
-            .groups = "drop") %>%
-  group_by(outcomeDate) %>%
-  mutate(rank_among_raws = dense_rank(importance))
+df_imp_reservoir_temp <- data.table::fread("results/final_prediction/importance/GeneticSingleIs_GA_importance_combined.csv") %>%
+  slice_min(hp_date)
 
-plot_reservoir_vs_input_importance <- df_imp_reservoir %>%
-  filter(rank_among_raws %in% c(1, 10, 50, 100, 200)) %>%
-  mutate(rank_among_raws = factor(rank_among_raws,
-                                  levels = c(1, 10, 50, 100, 200),
-                                  labels = c("1st", "10th", "50th", "100th", "200th"))) %>%
-  ggplot(mapping = aes(x = outcomeDate, y = importance, group = rank_among_raws, color = rank_among_raws)) +
-  geom_line() +
-  scale_color_viridis_d(direction = -1) +
-  scale_y_reverse(breaks = c(1, 50, 100, 200, 300, 400),
-                  labels = c("1st", "50th", "100th", "200th", "300th", "400th")) +
+vec_quantile <- c(0.25, .75)
+quantile_function <- lapply(vec_quantile,
+                            function(quantile) function(x) quantile(abs(x), quantile))
+names(quantile_function) <- paste0("q", vec_quantile*100)
+
+plot_coef_input_vs_reservoir <- df_imp_reservoir_temp %>%
+  ungroup() %>%
+  select(features, importance, outcomeDate) %>%
+  mutate(reservoir_features = factor(grepl("reservoir", x = features),
+                                     levels = c(T, F),
+                                     labels = c("Reservoir",
+                                                "Input layer"))) %>%
+  group_by(outcomeDate, reservoir_features) %>%
+  summarise_at(.vars = "importance",
+               .funs = quantile_function) %>%
+  ggplot(mapping = aes(x = outcomeDate, fill = reservoir_features, ymin = q25, ymax = q75)) +
+  geom_ribbon(alpha = 0.7) +
   theme_minimal() +
-  labs(y = "Importance rank according to output layer",
+  scale_fill_manual(values = c("#FB8500", "#219EBC")) +
+  scale_y_log10() +
+  labs(fill = "IQR of output layer coefficients",
        x = "Date",
-       color = "Rank among the input layer") +
-  theme(legend.position = "bottom") +
-  guides(color=guide_legend(nrow=2,byrow=TRUE))
+       y = "Output layer coefficients") +
+  theme(legend.position = "bottom")
 
-ggsave("results/figures/plot_reservoir_vs_input_importance.pdf",
+plot_reservoir_vs_input_importance <- ggpubr::ggarrange(plot_figure_performance_no_update + ggplot2::ggtitle("A"),
+                                                        plot_coef_input_vs_reservoir + ggplot2::ggtitle("B"),
+                                                        nrow = 2, ncol = 1,
+                                                        heights = c(0.6, 0.4))
+
+# 
+# df_imp_reservoir <- data.table::fread("results/final_prediction/importance/GeneticSingleIs_GA_importance_combined.csv") %>%
+#   mutate(last_used_observation = hp_date + 14) %>%
+#   slice_min(last_used_observation) %>%
+#   group_by(outcomeDate, trial) %>%
+#   mutate(rank = dense_rank(desc(abs(importance)))) %>%
+#   filter(!grepl(features, pattern = "reservoir")) %>%
+#   group_by(last_used_observation, features, outcomeDate) %>%
+#   summarise(importance = mean(rank),
+#             .groups = "drop") %>%
+#   group_by(outcomeDate) %>%
+#   mutate(rank_among_raws = dense_rank(importance))
+# 
+# plot_reservoir_vs_input_importance <- df_imp_reservoir %>%
+#   filter(rank_among_raws %in% c(1, 10, 50, 100, 200)) %>%
+#   mutate(rank_among_raws = factor(rank_among_raws,
+#                                   levels = c(1, 10, 50, 100, 200),
+#                                   labels = c("1st", "10th", "50th", "100th", "200th"))) %>%
+#   ggplot(mapping = aes(x = outcomeDate, y = importance, group = rank_among_raws, color = rank_among_raws)) +
+#   geom_line() +
+#   scale_color_viridis_d(direction = -1) +
+#   scale_y_reverse(breaks = c(1, 50, 100, 200, 300, 400),
+#                   labels = c("1st", "50th", "100th", "200th", "300th", "400th")) +
+#   theme_minimal() +
+#   labs(y = "Importance rank according to output layer",
+#        x = "Date",
+#        color = "Rank among the input layer") +
+#   theme(legend.position = "bottom") +
+#   guides(color=guide_legend(nrow=2,byrow=TRUE))
+
+ggsave("results/final_figures/plot_reservoir_vs_input_importance.pdf",
        plot = plot_reservoir_vs_input_importance,
-       width = 5, height = 5)
+       width = 5, height = 9)
 
 ##### number of parameters
-ls_importance <- list(RCGA = "results/importance/GeneticSingleIs_GA_importance_combined.csv",
-                      Enet = "results/importance/enet_pred_RS_importance_combined.csv",
-                      XGB = "results/importance/xgb_pred_RS_importance_combined.csv")
+ls_importance <- list(RCGA = "results/final_prediction/importance/GeneticSingleIs_GA_importance_combined.csv",
+                      RCGAPCA = "results/final_prediction/importance/GeneticSingleIs_GA_PCA_importance_combined.csv",
+                      Enet = "results/final_prediction/importance/enet_pred_RS_importance_combined.csv",
+                      XGB = "results/final_prediction/importance/xgb_pred_RS_importance_combined.csv")
 
 df_nb_hp <- lapply(ls_importance,
        FUN = function(path_i){
@@ -600,3 +666,34 @@ df_nb_hp <- lapply(ls_importance,
            reframe(min(nb_param), max(nb_param))
        }) %>%
   bind_rows(.id = "model")
+
+############# number of hp by GA
+df_nb_features <- lapply(names(ls_importance),
+                   FUN = function(name_path_i){
+                     path_i <- ls_importance[[name_path_i]]
+                     df_i <- path_i %>%
+                       data.table::fread() %>%
+                       slice_min(hp_date)
+                     
+                     if(name_path_i == "Enet"){
+                       df_i2 <- df_i %>%
+                         filter(importance != 0)
+                     }
+                     if(name_path_i == "XGB"){
+                       df_i2 <- df_i
+                     }
+                     if(name_path_i %in% c("RCGA", "RCGAPCA")){
+                       df_i2 <- df_i %>%
+                         filter(!grepl(features, pattern = "reservoir"))
+                     }
+                     df_i2 %>%
+                       group_by(outcomeDate, trial) %>%
+                       summarise(nb_features = n(), .groups = "drop") %>%
+                       summarise(q25 = quantile(nb_features, .25),
+                                 q50 = quantile(nb_features, .5),
+                                 q75 = quantile(nb_features, .75)) %>%
+                       mutate(model = name_path_i, .before = 1) %>%
+                       return(.)
+                     
+                   }) %>%
+  bind_rows()
