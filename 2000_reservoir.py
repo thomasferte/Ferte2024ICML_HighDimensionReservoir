@@ -29,7 +29,7 @@ job_id = trial_id + "_ridge_" + str(round(ridge))
 
 value = eval_objective_function(
 	  units = 2000,
-	  rm_output_files=False,
+	  rm_output_files=True,
 	  params=params,
 	  features=features,
 	  output_path=output_path,
@@ -42,4 +42,4 @@ value = eval_objective_function(
 
 dfres = pd.DataFrame({'trial_id': [trial_id], 'ridge': [ridge], 'value': [value]})
 
-dfres.to_csv(output_path+trial_id+".csv", index = False, header=True)
+dfres.to_csv(output_path+job_id+".csv", index = False, header=True)
