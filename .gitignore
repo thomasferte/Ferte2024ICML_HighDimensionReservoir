@@ -13,3 +13,4 @@ std_err/*
 std_out/*
 article/*
 results/*
+*.html
