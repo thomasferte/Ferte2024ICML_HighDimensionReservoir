@@ -18,7 +18,7 @@
 
 #SBATCH --array 0-39
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 10
+#SBATCH --cpus-per-task 15
 #SBATCH --mem-per-cpu=2560
 
 # fin des directives PBS
