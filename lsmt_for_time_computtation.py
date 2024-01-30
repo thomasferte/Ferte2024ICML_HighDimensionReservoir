@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jan 23 21:54:03 2024
-
-@author: ddutartr
-"""
-
 import numpy as np
 import pandas as pd
 import glob
@@ -17,6 +9,8 @@ import torch.nn as nn
 import os
 import glob
 import time
+
+
 
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -89,6 +83,20 @@ def standardise_data_for_ens(df, norm_array = None):
     scaling = {"features": df.drop(['outcome','outcomeDate'],axis = 1), "vecMaxAbs": norm_array}
     return X_norm, Y, scaling
 
+def do_pca(X,pca_value = 0.7,pca=None):
+    if pca is None:
+        pca = PCA(n_components=30)
+        pca.fit(X)
+        n_components, = np.where(np.cumsum(pca.explained_variance_ratio_)>pca_value)
+        if len(n_components)==0:
+            n_components=[1]
+        pca = PCA(n_components=n_components[0])
+        X_r = pca.fit(X).transform(X)
+    else:
+        X_r = pca.transform(X)
+    return X_r,pca
+
+
 def select_features_from_names(df, application_param):
     """Select features on dataframe based on list of names
     Parameters
@@ -119,6 +127,12 @@ def select_features_from_names(df, application_param):
     df_selected['outcome'] = df.outcome
     df_selected['outcomeDate'] = df.outcomeDate
     
+    # feat_dynamic_real = df[vecFeatures].values
+    # a,pca = do_pca(feat_dynamic_real)
+    # feat_dynamic_real=a.T.astype("float32")
+    # X = np.array(feat_dynamic_real)
+    # a,pca = do_pca(feat_dynamic_real)
+    
     return df_selected
 
 
@@ -148,11 +162,23 @@ def get_relative_baseline(path_out):
 
     return df_filter['AE'].mean()
 
-
-
-def pref_on_test_set(dftest, selected_columns , application_param , norm_array, model, n_seq):
+from sklearn.decomposition import PCA
+def do_pca(X,pca_value = 0.7,pca=None):
+    if pca is None:
+        pca = PCA(n_components=30)
+        pca.fit(X)
+        n_components, = np.where(np.cumsum(pca.explained_variance_ratio_)>pca_value)
+        if len(n_components)==0:
+            n_components=[1]
+        pca = PCA(n_components=n_components[0])
+        X_r = pca.fit(X).transform(X)
+    else:
+        X_r = pca.transform(X)
+    return X_r,pca
+def pref_on_test_set(dftest, selected_columns , application_param , norm_array, model, n_seq,pca,percent_pca):
     dftest_selected = dftest[selected_columns]
     X_esn, Y_esn, scaling = standardise_data_for_ens(dftest_selected, norm_array )
+    X_esn, pca = do_pca(X_esn,percent_pca,pca)
     X_esn, Y_esn = create_seq(X_esn,Y_esn,n_seq = n_seq)
     X_test = torch.from_numpy(X_esn).float()
     vecPred = model(X_test).squeeze().detach().numpy()
@@ -161,7 +187,7 @@ def pref_on_test_set(dftest, selected_columns , application_param , norm_array, 
     dfres['pred'] = np.squeeze(vecPred)
     dfres['pred'] = np.squeeze(vecPred) + dfres['hosp']
     dfres = dfres[['outcomeDate','outcome','hosp','pred']].tail(1)
-    dfres['nbFeatures'] = np.shape(X_esn)[1]
+    dfres['nbFeatures'] = np.shape(X_esn)[2]
     dfres['model'] = "LSTM"
     dfres['mintraining'] = application_param.mintraining
     return dfres
@@ -195,7 +221,7 @@ class EarlyStopper:
 
 
 
-def train_lstm(selected_files,index,application_param,output_path,job_id,learning_rate=1e-3,num_epochs=2000,n_seq=3):   
+def train_lstm(selected_files,index,application_param,output_path,job_id,learning_rate=1e-3,num_epochs=2000,n_seq=3,ld=1e-4,percent_pca=0.7):   
     file_i = selected_files.reset_index().full_path[index]
     input_data = pd.read_csv(file_i)
     dftrain = input_data.copy()
@@ -215,6 +241,7 @@ def train_lstm(selected_files,index,application_param,output_path,job_id,learnin
     selected_columns = df_select.columns
     # Do normalisation for ESN
     X_esn, Y_esn, scaling = standardise_data_for_ens(df=df_select)
+    X_esn,pca = do_pca(X_esn,percent_pca)
     X_esn, Y_esn = create_seq(X_esn,Y_esn,n_seq = n_seq)
     X_train,X_test = X_esn[:-7],X_esn[-7:]
     Y_train,Y_test = Y_esn[:-7],Y_esn[-7:]
@@ -234,7 +261,7 @@ def train_lstm(selected_files,index,application_param,output_path,job_id,learnin
     number
     model = LSTM(X_train.shape[-1],hidden_size=6,num_layers=1,output_size=Y_train.shape[-1])
     
-    l2_regularisation = 1e-4
+    l2_regularisation = ld
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate,betas=(0.9, 0.95) ,weight_decay=l2_regularisation)
     criterion = nn.MSELoss()
@@ -272,14 +299,18 @@ def train_lstm(selected_files,index,application_param,output_path,job_id,learnin
       selected_columns = selected_columns,
       application_param=application_param ,
       norm_array=norm_array,
-      model=model,n_seq = n_seq)
+      model=model,n_seq = n_seq,pca=pca,percent_pca = percent_pca)
     pred_j_esn["lr"]= learning_rate
     pred_j_esn["n_epoch"] = num_epochs
     pred_j_esn["n_seq"]= n_seq
     pred_j_esn["epoch"]= epoch
+    pred_j_esn["l2"]= l2_regularisation
+    pred_j_esn["percent_pca"]= percent_pca
+    
     pred_esn = pred_j_esn.reset_index()
     
     pred_esn.to_csv(output_path+ job_id +'/result_job_'+ selected_files.reset_index().file_name[index],index=False)
+
 
 
 
@@ -287,8 +318,12 @@ def create_params():
     lr = np.random.uniform(low=1e-4, high=0.01)
     n_seq = np.random.randint(1, 3)
     num_epoch = np.random.randint(500, 2200)
+    
+    lr, num_epoch,n_seq = 0.00955059115857072 ,  920, 5
+    ld = np.random.uniform(low=1e-7, high=0.01)
+    percent_pca = np.random.randint(30, 99)/100
 
-    return (lr, n_seq, num_epoch)
+    return (lr, n_seq, num_epoch,ld,percent_pca)
 
 
 def perform_full_training(path, application_param , job_id,output_path, best_param = None,min_date_eval='2021-03-01', forecast_days=14):
@@ -308,43 +343,41 @@ def perform_full_training(path, application_param , job_id,output_path, best_par
     os.makedirs(output_path, exist_ok = True)
     os.makedirs(output_path + job_id, exist_ok = True)
     if best_param is None :
-        lr, n_seq , num_epoch = create_params()
+        lr, n_seq, num_epoch,ld,percent_pca = create_params()
     else:
-        lr, num_epoch , n_seq = best_param
+        lr,num_epoch, n_seq,ld,percent_pca = best_param
     # Loop over file
     for i in range(selected_files.shape[0]):
         print(i)
-        train_lstm(selected_files,i,application_param,output_path,job_id,lr,num_epoch,n_seq)
+        train_lstm(selected_files,i,application_param,output_path,job_id,lr,num_epoch,n_seq,ld,percent_pca)
     perf = get_relative_baseline(output_path + job_id)
     # files = glob.glob(output_path + job_id + '/*')
     # for f in files:
     #     os.remove(f)
         
-    return perf , lr , num_epoch , n_seq
+    return perf , lr , num_epoch , n_seq,ld,percent_pca
 
 
 if __name__ == '__main__':
-    # files_features = "/home/ddutartr/Téléchargements/best_features.csv"
-    files_features = "/home/tf1/Documents/recherche/prediction_covid/high_dimension_reservoir/results/best_features.csv"
-    feat= pd.read_csv(files_features)
-    feat = feat[feat['last_used_observation'] == "2021-03-01"] 
+
     # path = '/home/ddutartr/Projet/SISTM/LSTM/data/data_obfuscated/'
-    path = '/home/tf1/Documents/recherche/prediction_covid/high_dimension_reservoir/data_obfuscated_time/'
+    # path = '/beegfs/ddutartr/LSTM/data_obfuscated/'
+    path = "data_obfuscated_time/"
     application_param = appParam()
-    application_param.vecFeaturesEpi = feat.name.tolist()
-    # application_param.vecFeaturesEpi = ['all']
-    job_id = 'slurmtoto_GA_50'
+    application_param.vecFeaturesEpi = ['all']
+    job_id = 'slurmtoto_PCA_for_thomas'
     # output_path = '/home/ddutartr/Projet/SISTM/LSTM/output/'
     # output_path = '/beegfs/ddutartr/LSTM/output/'
     output_path = 'output/LSTM/'
+    # log_file = "/home/ddutartr/Projet/SISTM/LSTM/log.csv"
+    log_file = "output/LSTMlog.csv"
     application_param.is_training = False
-    best_param = 0.0087, 1250, 2
-    best_param = None
-    best_param = 0.00955059115857072 ,  920, 5
+    # log_file = "/beegfs/ddutartr/LSTM/log2.csv"
+    best_param = 0.00955059115857072 ,  920, 5,3.89884610e-03, 0.87
     
     start_time = time.time()
-
-    perf , lr , num_epoch, n_seq = perform_full_training(path, application_param, job_id,output_path,best_param, min_date_eval = "2021-03-01")
+    
+    perf , lr , num_epoch, n_seq,ld,percent_pca = perform_full_training(path, application_param, job_id,output_path,best_param)
     
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -355,4 +388,5 @@ if __name__ == '__main__':
     }
     results_df = pd.DataFrame(results)
     results_df.to_csv("results/timing_LSTM.csv")
-    perf
+        
+    perf  
