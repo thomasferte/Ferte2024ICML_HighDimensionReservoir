@@ -197,16 +197,52 @@ The total number of features is 409.
    <td style="text-align:right;"> 2.40 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> LSTM </td>
+   <td style="text-align:left;"> LSTM-PCA </td>
    <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 16.11 </td>
-   <td style="text-align:right;"> 14.83 </td>
-   <td style="text-align:right;"> -2.47 </td>
-   <td style="text-align:right;"> 11.30 </td>
-   <td style="text-align:right;"> 0.26 </td>
-   <td style="text-align:right;"> 0.45 </td>
-   <td style="text-align:right;"> 0.68 </td>
-   <td style="text-align:right;"> 4.51 </td>
+   <td style="text-align:right;"> 15.74 </td>
+   <td style="text-align:right;"> 13.98 </td>
+   <td style="text-align:right;"> -2.84 </td>
+   <td style="text-align:right;"> 11.80 </td>
+   <td style="text-align:right;"> 0.24 </td>
+   <td style="text-align:right;"> 0.50 </td>
+   <td style="text-align:right;"> 0.76 </td>
+   <td style="text-align:right;"> 3.32 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> LSTM-PCA </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 15.74 </td>
+   <td style="text-align:right;"> 13.98 </td>
+   <td style="text-align:right;"> -2.84 </td>
+   <td style="text-align:right;"> 11.80 </td>
+   <td style="text-align:right;"> 0.24 </td>
+   <td style="text-align:right;"> 0.50 </td>
+   <td style="text-align:right;"> 0.76 </td>
+   <td style="text-align:right;"> 3.32 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> LSTM-RC-GA </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 15.08 </td>
+   <td style="text-align:right;"> 12.71 </td>
+   <td style="text-align:right;"> -3.51 </td>
+   <td style="text-align:right;"> 9.30 </td>
+   <td style="text-align:right;"> 0.23 </td>
+   <td style="text-align:right;"> 0.48 </td>
+   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 1.76 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> LSTM-RC-GA </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 15.08 </td>
+   <td style="text-align:right;"> 12.71 </td>
+   <td style="text-align:right;"> -3.51 </td>
+   <td style="text-align:right;"> 9.30 </td>
+   <td style="text-align:right;"> 0.23 </td>
+   <td style="text-align:right;"> 0.48 </td>
+   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 1.76 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Transformers </td>
@@ -398,7 +434,7 @@ month.
   </tr>
   <tr>
    <td style="text-align:left;"> LSTM </td>
-   <td style="text-align:right;"> 37.3698673 </td>
+   <td style="text-align:right;"> 32.2258518 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Transformers </td>

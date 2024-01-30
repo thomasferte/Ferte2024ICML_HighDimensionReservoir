@@ -153,7 +153,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "SingleIs_GA",
                                    "enet_pred_RS",
                                    "xgb_pred_RS",
-                                   "LSTM",
+                                   "LSTM_PCA",
+                                   "LSTM_RC",
                                    "transformers",
                                    "2000_units"),
                         labels = c("Reservoir FS (GA)",
@@ -163,7 +164,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "Reservoir no FS (GA)",
                                    "Elastic-net (RS)",
                                    "XGB (RS)",
-                                   "LSTM",
+                                   "LSTM-PCA",
+                                   "LSTM-RC-GA",
                                    "Transformers",
                                    "Reservoir FS (GA - 2000)"))) %>%
   group_by(outcomeDate, model) %>%
@@ -304,7 +306,8 @@ df_individual_model <- df_all %>%
                                   "hosp",
                                   "Elastic-net (RS)",
                                   "XGB (RS)",
-                                  "LSTM",
+                                  "LSTM-PCA",
+                                  "LSTM-RC-GA",
                                   "Transformers",
                                   "Reservoir FS (RS)",
                                   "Reservoir no FS (GA)",
@@ -321,7 +324,7 @@ plot_figure_performance_no_update <- df_individual_model %>%
                      "Observed",
                      "Reservoir FS (GA - 2000)",
                      "XGB (RS)",
-                     "LSTM")) %>%
+                     "LSTM-PCA")) %>%
   ggplot(mapping = aes(x = outcomeDate, y = value, color = name)) +
   geom_line() +
   ggstar::geom_star(x = as.Date("2021-08-19"),
