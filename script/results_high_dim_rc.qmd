@@ -42,6 +42,96 @@ df_data %>%
 
 The total number of features is `r nb_features`.
 
+# PCA
+
+```{r}
+ncp = 20
+pca <- df_data %>%
+  select(-outcome, -outcomeDate, -START_DATE) %>%
+  FactoMineR::PCA(graph = FALSE, ncp = ncp)
+```
+
+```{r}
+pca$eig %>%
+  as.data.frame() %>%
+  tibble::rowid_to_column(var = "Nb_component") %>%
+  ggplot(mapping = aes(y = Nb_component, x = `cumulative percentage of variance`)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Cumulative percentage of variance",
+       y = "Nb of components")
+```
+
+```{r fig.height=10}
+
+plotPCA <- pca$var$cos2 %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("features") %>%
+  tidyr::pivot_longer(cols = - features) %>%
+  group_by(name) %>%
+  slice_max(value, n = 3) %>%
+  mutate(features_clean = FctCleanFeaturesName(features),
+         features_clean = forcats::fct_reorder(features_clean, value),
+         name = factor(name,
+                       levels = paste0("Dim.", 1:ncp),
+                       labels = c("PC1: \"SAMU\"",
+                                  "PC2: \"Emergency all site\"",
+                                  "PC3: \"PCR+\"",
+                                  "PC4: \"PCR+\"",
+                                  "PC5: \"SAMU\"",
+                                  "PC6: \"Weather\"",
+                                  "PC7: \"Diarrhea\"",
+                                  "PC8: \"PCR\"",
+                                  "PC9: \"Ageusia, anosmia\"",
+                                  "PC10: \"Emergency site 2\"",
+                                  "PC11: \"Pediatric\"",
+                                  "PC12: \"PCR+ elderly\"",
+                                  "PC13: \"Dyspnea\"",
+                                  "PC14: \"Fever + Dew point\"",
+                                  "PC15: \"Pediatric headache\"",
+                                  "PC16: \"Pediatric dyspnea\"",
+                                  "PC17: \"Fever + wind speed\"",
+                                  "PC18: \"Site 2 + SAMU\"",
+                                  "PC19: ?",
+                                  "PC20: ?"))) %>%
+  ggplot(mapping = aes(y = features_clean, x = value, color = name)) +
+  geom_point() +
+  scale_color_viridis_d() +
+  facet_wrap(name ~ ., scales = "free_y", ncol = 2) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        strip.text = element_text(size = 9)) +
+  labs(x = "Squared cosine",
+       y = "")
+
+plotPCA
+
+ggsave(here::here("results/final_figures/plotPCA.pdf"),
+       plot = plotPCA,
+       width = 11,
+       height = 8)
+```
+
+```{r fig.height=10}
+pca$ind$coord %>%
+  as.data.frame() %>%
+  mutate(outcomeDate = as.Date(df_data$outcomeDate),
+         outcome = df_data$outcome,
+         .before = 1) %>%
+  tidyr::pivot_longer(cols = -c(outcomeDate)) %>%
+  mutate(name = factor(name, levels = c("outcome", paste0("Dim.", 1:ncp)))) %>%
+  ggplot(mapping = aes(y = value, x = outcomeDate, color = name)) +
+  geom_line() +
+  scale_color_manual(values = c("black", viridis::viridis(n = ncp))) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  facet_wrap(name ~ ., scales = "free_y") +
+  labs(x = "Date",
+       y = "Value",
+       color = "",
+       linewidth = "")
+```
+
 # Forecast
 
 ```{r}
@@ -63,6 +153,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "SingleIs_GA",
                                    "enet_pred_RS",
                                    "xgb_pred_RS",
+                                   "LSTM",
+                                   "transformers",
                                    "2000_units"),
                         labels = c("Reservoir FS (GA)",
                                    "Reservoir FS (GA) all anteriority",
@@ -71,6 +163,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "Reservoir no FS (GA)",
                                    "Elastic-net (RS)",
                                    "XGB (RS)",
+                                   "LSTM",
+                                   "Transformers",
                                    "Reservoir FS (GA - 2000)"))) %>%
   group_by(outcomeDate, model) %>%
   filter(outcomeDate >= as.Date("2021-03-15"))
@@ -78,8 +172,10 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
 df_all <- df_all_temp %>% slice_min(hp_date) %>% mutate(update = "No") %>%
   bind_rows(df_all_temp %>% slice_max(hp_date) %>% mutate(update = "Yes")) %>%
   ungroup() %>%
-  filter(!(model == "Reservoir FS (GA) all anteriority" & update == "Yes"),
-         !(model == "Reservoir FS (GA - 2000)" & update == "Yes"))
+  filter(!(model %in% c("Reservoir FS (GA) all anteriority",
+                        "Reservoir FS (GA - 2000)",
+                        "LSTM",
+                        "Transformers") & update == "Yes"))
 ```
 
 ## Performance
@@ -100,15 +196,20 @@ df_perf <- df_all %>%
          AE_baseline = AE - baseline_AE,
          RE_baseline = AE/baseline_AE) %>%
   group_by(model, update) %>%
-  summarise(AE = mean(AE, na.rm = T),
+  summarise(sd_AE = sd(AE, na.rm = T),
+            AE = mean(AE, na.rm = T),
+            sd_AE_baseline = sd(AE_baseline, na.rm = T),
             AE_baseline = mean(AE_baseline, na.rm = T),
+            sd_RE = sd(RE, na.rm = TRUE),
             RE = median(RE, na.rm = TRUE),
+            sd_RE_baseline = sd(RE_baseline, na.rm = TRUE),
             RE_baseline = median(RE_baseline, na.rm = TRUE),
-            .groups = "drop")
+            .groups = "drop") %>%
+  select(model, update, AE, sd_AE, AE_baseline, sd_AE_baseline, RE, sd_RE, RE_baseline, sd_RE_baseline)
 
 df_perf %>%
   # knitr::kable(format = "latex",
-  #              digits = 2) %>%
+  #              digits = 2)
   knitr::kable(digits = 2,
                caption = "Model performance") %>%
   kableExtra::kable_styling()
@@ -122,7 +223,7 @@ df_perf %>%
 
 ```
 
-## RC aggregation 
+## RC aggregation
 
 ```{r}
 #| label: rc-aggreg
@@ -203,8 +304,12 @@ df_individual_model <- df_all %>%
                                   "hosp",
                                   "Elastic-net (RS)",
                                   "XGB (RS)",
+                                  "LSTM",
+                                  "Transformers",
                                   "Reservoir FS (RS)",
                                   "Reservoir no FS (GA)",
+                                  "Reservoir FS (GA) all anteriority",
+                                  "Reservoir FS (GA - PCA)",
                                   "Reservoir FS (GA)",
                                   "Reservoir FS (GA - 2000)")),
          name = forcats::fct_recode(name,
@@ -215,17 +320,33 @@ plot_figure_performance_no_update <- df_individual_model %>%
   filter(name %in% c("Hosp t+14",
                      "Observed",
                      "Reservoir FS (GA - 2000)",
-                     "Elastic-net (RS)",
-                     "XGB (RS)")) %>%
+                     "XGB (RS)",
+                     "LSTM")) %>%
   ggplot(mapping = aes(x = outcomeDate, y = value, color = name)) +
   geom_line() +
+  ggstar::geom_star(x = as.Date("2021-08-19"),
+                    starshape = 23,
+                    color = "white",
+                    fill = "#FFB703",
+                    y = 80,
+                    size=5,
+                    inherit.aes = FALSE) +
+  annotate(geom = "text",
+           label = "Holiday break",
+           x = as.Date("2021-08-19"),
+           y = 115,
+           size=4,
+           angle = 90) +
   scale_color_manual(values = c("black", "darkgrey", "#005F73", "#94D2BD", "#AE2012")) +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(x = "Date",
        y = "Hospitalizations",
-       color = "") +
+       color = "",
+       fill = "") +
   guides(color = guide_legend(ncol = 2))
+
 
 plot_figure_performance_no_update
 
@@ -246,12 +367,13 @@ plot_figure_performance_all <- df_all %>%
             pred = median(pred),
             .groups = "drop") %>%
   mutate(outcomeDate = as.Date(outcomeDate),
-         update = if_else(update == "Yes", "Hp updated each month", "Hp set at 2021-03-29")) %>%
+         update = if_else(update == "Yes", "Hp updated each month", "Hp set at 2021-03-01")) %>%
   ggplot(mapping = aes(x = outcomeDate, y = pred, color = update)) +
   geom_line() +
   geom_line(mapping = aes(y = outcome, color = " Observed")) +
   geom_line(mapping = aes(y = hosp, color = "Hosp t+14")) +
   scale_color_manual(values = c("black", "darkgrey", "#AE2012", "#EE9B00")) +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(x = "Date",
@@ -264,7 +386,7 @@ plot_figure_performance_all
 
 ggsave(here::here("results/final_figures/plot_figure_performance_all.pdf"),
        plot = plot_figure_performance_all,
-       width = 8)
+       width = 8, height = 10)
 
 ```
 
@@ -569,7 +691,6 @@ ggsave(here::here("results/final_figures/plot_feature_imp_RCGA.pdf"),
 
 ```
 
-
 ```{r fig.height=15}
 #| label: feature-selection-all
 #| fig-cap: "Feature selection"
@@ -612,7 +733,6 @@ list.files(path = here::here("results/2000units/"), full.names = T) %>%
   theme_minimal() +
   labs(x = "ridge", y = "MAE")
 ```
-
 
 # Failure of monthly update
 
@@ -661,6 +781,7 @@ df_perf_by_lr %>%
   knitr::kable(caption = "Performance by leaking rate") %>%
   kableExtra::kable_styling()
 ```
+
 ```{r}
 #| label: prediction-by-lr
 #| fig-cap: "Prediction by leaking rate"
@@ -681,6 +802,7 @@ plot_RCGA_noupdate_by_lr <- df_by_lr %>%
   ggplot(mapping = aes(x = outcomeDate, y = value, color = name)) +
   geom_line() +
   scale_color_manual(values = c("black", "darkgrey", "#FB8500", "#219EBC")) +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(x = "Date",
@@ -698,48 +820,105 @@ ggsave(here::here("results/final_figures/plot_RCGA_noupdate_by_lr.pdf"),
 
 # Computing time
 
+<!-- ```{r} -->
+
+<!-- #| eval: false -->
+
+<!-- ### redo on local machine -->
+
+<!-- df_time_hp <- df_all_hp_best40 %>% -->
+
+<!--   slice_min(date) %>% -->
+
+<!--   filter(model %in% c("Reservoir FS (RS)", -->
+
+<!--                       "Elastic-net (RS)", -->
+
+<!--                       "XGB (RS)")) %>% -->
+
+<!--   mutate(nb_features = select(., ends_with("_bin")) %>% mutate_all(.funs = function(x) x == "y") %>% rowSums()) %>% -->
+
+<!--   select(model, time_seconds, all_of(numeric_hp), nb_features) %>% -->
+
+<!--   tidyr::pivot_longer(cols = -c("model", "time_seconds")) %>% -->
+
+<!--   na.omit() -->
+
+<!-- read.csv("data_obfuscated/20210329.csv") %>% -->
+
+<!--   select(-outcome, -outcomeDate, -START_DATE) %>% -->
+
+<!--   dim() -->
+
+<!-- plot_time_hp <- df_time_hp %>% -->
+
+<!--   ggplot(mapping = aes(x = value, y = time_seconds)) + -->
+
+<!--   geom_point(size = 0.01) + -->
+
+<!--   scale_x_log10() + -->
+
+<!--   facet_wrap(model ~ name, scales = "free", ncol = 3) + -->
+
+<!--   theme_minimal() -->
+
+<!-- df_time_hp %>% -->
+
+<!--   filter(name == "nb_features") %>% -->
+
+<!--   reframe(quantile(value, probs = c(0.25, 0.5, 0.75))) -->
+
+<!-- ggsave(here::here("results/final_figures/plot_time_hp.pdf"), -->
+
+<!--        plot = plot_time_hp, -->
+
+<!--        useDingbats = TRUE, -->
+
+<!--        height = 7, -->
+
+<!--        width = 7) -->
+
+<!-- df_all_hp %>% -->
+
+<!--   slice_min(date) %>% -->
+
+<!--   group_by(model) %>% -->
+
+<!--   summarise(q1 = quantile(time_seconds, 0.25), -->
+
+<!--             median = quantile(time_seconds, 0.5), -->
+
+<!--             q3 = quantile(time_seconds, 0.75)) -->
+
+<!-- ``` -->
+
+We evaluated the time needed to train and forecast on January 2022
+month.
+
 ```{r}
-#| eval: false
-
-### redo on local machine
-df_time_hp <- df_all_hp_best40 %>%
-  slice_min(date) %>%
-  filter(model %in% c("Reservoir FS (RS)",
-                      "Elastic-net (RS)",
-                      "XGB (RS)")) %>%
-  mutate(nb_features = select(., ends_with("_bin")) %>% mutate_all(.funs = function(x) x == "y") %>% rowSums()) %>%
-  select(model, time_seconds, all_of(numeric_hp), nb_features) %>%
-  tidyr::pivot_longer(cols = -c("model", "time_seconds")) %>%
-  na.omit()
-
-read.csv("data_obfuscated/20210329.csv") %>%
-  select(-outcome, -outcomeDate, -START_DATE) %>%
-  dim()
-
-plot_time_hp <- df_time_hp %>%
-  ggplot(mapping = aes(x = value, y = time_seconds)) +
-  geom_point(size = 0.01) +
-  scale_x_log10() +
-  facet_wrap(model ~ name, scales = "free", ncol = 3) +
-  theme_minimal()
-
-df_time_hp %>%
-  filter(name == "nb_features") %>%
-  reframe(quantile(value, probs = c(0.25, 0.5, 0.75)))
-
-ggsave(here::here("results/final_figures/plot_time_hp.pdf"),
-       plot = plot_time_hp,
-       useDingbats = TRUE,
-       height = 7,
-       width = 7)
-
-df_all_hp %>%
-  slice_min(date) %>%
-  group_by(model) %>%
-  summarise(q1 = quantile(time_seconds, 0.25),
-            median = quantile(time_seconds, 0.5),
-            q3 = quantile(time_seconds, 0.75))
-
+c("results/timing.csv",
+  "results/timing_LSTM.csv",
+  "results/timing_TRANSFORMER.csv") %>%
+  lapply(function(file_i){
+    read.csv(here::here(file_i))
+  }) %>%
+  bind_rows() %>%
+  select(Scenario, "Time (s)" = Elapsed.Time) %>%
+  mutate(Scenario = factor(Scenario,
+                           levels = c("enet_pred_RS",
+                                      "xgb_pred_RS",
+                                      "GeneticSingleIs_GA",
+                                      "GeneticSingleIs_GA_1000",
+                                      "LSTM",
+                                      "TRANSFORMER"),
+                           labels = c("Elastic-net (RS)",
+                                      "XGB (RS)",
+                                      "Reservoir FS (GA)",
+                                      "Reservoir FS (GA - 2000)",
+                                      "LSTM",
+                                      "Transformers"))) %>%
+  knitr::kable(caption = "Time on january month by algorithm. For RCGA, 40 RC where performed.") %>%
+  kableExtra::kable_styling()
 ```
 
 # Reservoir vs raw features importance
@@ -771,6 +950,7 @@ plot_coef_input_vs_reservoir <- df_imp_reservoir_temp %>%
   theme_minimal() +
   scale_fill_manual(values = c("#FB8500", "#219EBC")) +
   scale_y_log10() +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
   labs(fill = "IQR of output layer coefficients",
        x = "Date",
        y = "Output layer coefficients") +
@@ -885,17 +1065,24 @@ plot_perf_by_period <- df_all_temp %>%
   group_by(model, periods) %>%
   mutate(scaled_MAE = scale(MAE),
          scaled_MAE = if_else(is.na(scaled_MAE), 0, scaled_MAE)) %>%
-  filter(model %in% c("Elastic-net (RS)",
-                      "XGB (RS)",
-                      "Reservoir FS (GA)")) %>%
+  filter(model %in% c("Reservoir FS (GA)")) %>%
+  mutate(hp_date = gsub(hp_date, pattern = "-15$", replacement = "-01"),
+         hp_date = gsub(hp_date, pattern = "-16$", replacement = "-02")) %>%
   ggplot(mapping = aes(x = periods, y = hp_date, fill = scaled_MAE)) +
   geom_tile() +
   scale_fill_distiller(palette = "RdBu") +
   facet_grid(model ~ .) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90))
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Periods",
+       y = "Hyperparameter update date",
+       fill = "Scaled MAE")
 
 plot_perf_by_period
+
+ggsave(here::here("results/final_figures/plot_perf_by_period.pdf"),
+       plot = plot_perf_by_period,
+       width = 5, height = 4)
 ```
 
 ## Towards more agile update
@@ -932,7 +1119,7 @@ df_res <- mclapply(result_list,
                        best_previous2weeks <- df_all_temp_daily_update %>%
                          filter(outcomeDate == date_i_pred) %>%
                          ungroup()
-                         
+                       
                      } else {
                        best_previous2weeks <- df_all_temp_daily_update %>%
                          filter(outcomeDate <= date_i_start,
