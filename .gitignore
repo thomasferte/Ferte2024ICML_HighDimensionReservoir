@@ -2,9 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+.ipynb_checkpoints*
 
-data_obfuscated/*
-data_obfuscated_short/*
+data_obfuscated*
 data/*
 *_pycache_*
 myenv/*
