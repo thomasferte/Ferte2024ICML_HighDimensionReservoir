@@ -311,6 +311,22 @@ class EarlyStopper:
                     return True
         return False
 
+
+
+from sklearn.decomposition import PCA
+def do_pca(X,pca_value = 0.87,pca=None):
+    if pca is None:
+        pca = PCA(n_components=30)
+        pca.fit(X)
+        n_components, = np.where(np.cumsum(pca.explained_variance_ratio_)>pca_value)
+        if len(n_components)==0:
+            n_components=[1]
+        pca = PCA(n_components=n_components[0])
+        X_r = pca.fit(X).transform(X)
+    else:
+        X_r = pca.transform(X)
+    return X_r,pca
+
 def train_transformers(min_date_eval = "2021-06-10"):
     dataset = load_dataset('esn_dataset.py',min_date_eval  = min_date_eval)
     freq = "1D"
@@ -361,7 +377,7 @@ def train_transformers(min_date_eval = "2021-06-10"):
     
     accelerator = Accelerator()
     device = accelerator.device
-    optimizer = AdamW(model.parameters(), lr=1e-3, betas=(0.9, 0.95), weight_decay=1e-4)
+    optimizer = AdamW(model.parameters(), lr=5e-4, betas=(0.9, 0.95), weight_decay=1e-4)
 
     
     model, optimizer, train_dataloader = accelerator.prepare(

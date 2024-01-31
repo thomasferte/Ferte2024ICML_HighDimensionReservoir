@@ -61,6 +61,20 @@ class ESNCovidConfig(datasets.BuilderConfig):
     is_best_param : bool = True
 
 
+from sklearn.decomposition import PCA
+def do_pca(X,pca=None):
+    if pca is None:
+        pca = PCA(n_components=35)
+        pca.fit(X)
+        X_r = pca.fit(X).transform(X)
+        print("train PCA")
+    else:
+        pca = PCA(n_components=35)
+        pca.fit(X)
+        X_r = pca.transform(X)
+        print("reuse PCA")
+    return X_r,pca
+
 class ESNCovidDataset(datasets.GeneratorBasedBuilder):
     """ESNCovidDataset dataset"""
 
@@ -167,13 +181,19 @@ class ESNCovidDataset(datasets.GeneratorBasedBuilder):
                        "Vaccin_1dose",
                        "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
                         if self.config.is_best_param:
+                            # files_features = "/home/ddutartr/best_features(1).csv"
                             files_features = "/home/tf1/Documents/recherche/prediction_covid/high_dimension_reservoir/results/best_features.csv"
                             feat= pd.read_csv(files_features)
-                            feat = feat[feat['last_used_observation'] == "2021-03-01"] 
                             vecFeaturesEpi = feat.name.tolist()
+                            column_names = df.columns.tolist()
+                            vecFeaturesEpi = [col for col in column_names if col not in ['outcome','outcomeDate']]
                         column_names = df.columns.tolist()
                         vecFeatures = [c for c in vecFeaturesEpi if c in column_names]
-                        feat_dynamic_real = df[vecFeatures].values.T.astype("float32")
+                        feat_dynamic_real = df[vecFeatures].values
+                        a,pca = do_pca(feat_dynamic_real)
+                        a= feat_dynamic_real
+                        feat_dynamic_real=a.T.astype("float32")
+                        print("Updated shape of feat_dynamic_real:", feat_dynamic_real.shape)
                         yield i, {
                             "start": start,
                             "target": target,
@@ -205,13 +225,19 @@ class ESNCovidDataset(datasets.GeneratorBasedBuilder):
                    "Vaccin_1dose",
                    "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
                     if self.config.is_best_param:
+                        # files_features = "/home/ddutartr/best_features(1).csv"
                         files_features = "/home/tf1/Documents/recherche/prediction_covid/high_dimension_reservoir/results/best_features.csv"
                         feat= pd.read_csv(files_features)
-                        feat = feat[feat['last_used_observation'] == "2021-03-01"] 
                         vecFeaturesEpi = feat.name.tolist()
+                        column_names = df.columns.tolist()
+                        vecFeaturesEpi = [col for col in column_names if col not in ['outcome','outcomeDate']]
                     column_names = df.columns.tolist()
                     vecFeatures = [c for c in vecFeaturesEpi if c in column_names]
                     feat_dynamic_real = df[vecFeatures].values.T.astype("float32")
+                    feat_dynamic_real = df[vecFeatures].values
+                    a,pca = do_pca(feat_dynamic_real)
+                    feat_dynamic_real=a.T.astype("float32")
+                    print("Updated shape of feat_dynamic_real:", feat_dynamic_real.shape)
                     yield 0, {
                         "start": start,
                         "target": target,
@@ -250,13 +276,19 @@ class ESNCovidDataset(datasets.GeneratorBasedBuilder):
                "Vaccin_1dose",
                "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
                 if self.config.is_best_param:
+                    # files_features = "/home/ddutartr/best_features(1).csv"
                     files_features = "/home/tf1/Documents/recherche/prediction_covid/high_dimension_reservoir/results/best_features.csv"
                     feat= pd.read_csv(files_features)
-                    feat = feat[feat['last_used_observation'] == "2021-03-01"] 
                     vecFeaturesEpi = feat.name.tolist()
+                    column_names = df.columns.tolist()
+                    vecFeaturesEpi = [col for col in column_names if col not in ['outcome','outcomeDate']]
                 column_names = df.columns.tolist()
                 vecFeatures = [c for c in vecFeaturesEpi if c in column_names]
-                feat_dynamic_real = df[vecFeatures].values.T.astype("float32")
+                feat_dynamic_real = df[vecFeatures].values
+                a,pca = do_pca(feat_dynamic_real)
+                # a =  feat_dynamic_real
+                feat_dynamic_real=a.T.astype("float32")
+                print("Updated shape of feat_dynamic_real:", feat_dynamic_real.shape)
                 yield 0, {
                     "start": start,
                     "target": target,

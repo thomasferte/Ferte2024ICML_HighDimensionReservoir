@@ -904,7 +904,7 @@ month.
 ```{r}
 c("results/timing.csv",
   "results/timing_LSTM.csv",
-  "results/timing_TRANSFORMER.csv") %>%
+  "results/timing_TRASNFORMERS_PCA.csv") %>%
   lapply(function(file_i){
     read.csv(here::here(file_i))
   }) %>%

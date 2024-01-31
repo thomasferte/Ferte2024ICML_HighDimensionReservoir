@@ -474,7 +474,7 @@ month.
   </tr>
   <tr>
    <td style="text-align:left;"> Transformers </td>
-   <td style="text-align:right;"> 1783.4447594 </td>
+   <td style="text-align:right;"> 868.7015507 </td>
   </tr>
 </tbody>
 </table>
