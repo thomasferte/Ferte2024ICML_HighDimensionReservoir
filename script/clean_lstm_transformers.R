@@ -7,9 +7,9 @@ nbFeatures <- features %>%
   slice_min(last_used_observation) %>%
   nrow()
 
-##### transformers #####
+##### transformers - RC #####
 
-tranformers <- readODS::read_ods(path = "results/final_prediction/Resultat LSTM & Transformers/res_transformers.ods") %>%
+tranformers_RC <- readODS::read_ods(path = "results/final_prediction/Resultat LSTM & Transformers/res_transformers.ods") %>%
   mutate(model = "transformer",
          trial = "transformer_1",
          nbFeatures = nbFeatures,
@@ -26,7 +26,28 @@ tranformers <- readODS::read_ods(path = "results/final_prediction/Resultat LSTM 
   filter(outcomeDate >= as.Date("2021-03-15")) %>%
   select(colnames(RCGA))
 
-write.csv(tranformers, file = "results/final_prediction/predictions/transformers_combined.csv")
+write.csv(tranformers_RC, file = "results/final_prediction/predictions/transformers_RC_combined.csv", row.names = FALSE)
+
+##### transformers - PCA #####
+
+transformers_PCA <- readODS::read_ods(path = "results/final_prediction/Resultat LSTM & Transformers/res_transformers_PCA.ods") %>%
+  mutate(model = "transformer",
+         trial = "transformer_1",
+         nbFeatures = NA,
+         pred = hosp + diff_predite,
+         date = gsub(date, pattern = "'", replacement = "") %>% as.Date(.),
+         outcomeDate = date) %>%
+  select(trial, model, pred, nbFeatures, outcomeDate) %>%
+  left_join(RCGA %>%
+              slice_min(hp_date) %>%
+              select(outcomeDate, outcome, hosp, mintraining, hp_date) %>%
+              mutate(outcomeDate = as.Date(outcomeDate)) %>%
+              distinct(),
+            by = c("outcomeDate")) %>%
+  filter(outcomeDate >= as.Date("2021-03-15")) %>%
+  select(colnames(RCGA))
+
+write.csv(transformers_PCA, file = "results/final_prediction/predictions/transformers_PCA_combined.csv", row.names = FALSE)
 
 ##### LSTM - RC #####
 ls_LSTM_RC <- list.files(path = "results/final_prediction/Resultat LSTM & Transformers/LSTM_selection_GA_16/",
@@ -54,7 +75,7 @@ LSTM_RC <- lapply(ls_LSTM_RC, process_file) %>%
   filter(outcomeDate >= as.Date("2021-03-15")) %>%
   select(colnames(RCGA))
 
-write.csv(LSTM_RC, file = "results/final_prediction/predictions/LSTM_RC_combined.csv")
+write.csv(LSTM_RC, file = "results/final_prediction/predictions/LSTM_RC_combined.csv", row.names = FALSE)
 
 ##### LSTM - PCA #####
 ls_LSTM_PCA <- list.files(path = "results/final_prediction/Resultat LSTM & Transformers/slurmtoto_PCA_for_thomas/",
@@ -82,5 +103,5 @@ ls_LSTM_PCA <- lapply(ls_LSTM_PCA, process_file) %>%
   filter(outcomeDate >= as.Date("2021-03-15")) %>%
   select(colnames(RCGA))
 
-write.csv(ls_LSTM_PCA, file = "results/final_prediction/predictions/LSTM_PCA_combined.csv")
+write.csv(ls_LSTM_PCA, file = "results/final_prediction/predictions/LSTM_PCA_combined.csv", row.names = FALSE)
 

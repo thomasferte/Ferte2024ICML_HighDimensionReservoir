@@ -146,7 +146,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
   bind_rows(.id = "model") %>%
   mutate(outcomeDate = as.Date(outcomeDate),
          model = factor(model,
-                        levels = c("GeneticSingleIs_GA",
+                        levels = c("2000_units",
+                                   "GeneticSingleIs_GA",
                                    "GeneticSingleIs_GA_1000anteriorite",
                                    "GeneticSingleIs_GA_PCA",
                                    "GeneticSingleIs_RS",
@@ -155,9 +156,10 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "xgb_pred_RS",
                                    "LSTM_PCA",
                                    "LSTM_RC",
-                                   "transformers",
-                                   "2000_units"),
-                        labels = c("Reservoir FS (GA)",
+                                   "transformers_PCA",
+                                   "transformers_RC"),
+                        labels = c("Reservoir FS (GA - 2000)",
+                                   "Reservoir FS (GA)",
                                    "Reservoir FS (GA) all anteriority",
                                    "Reservoir FS (GA - PCA)",
                                    "Reservoir FS (RS)",
@@ -166,8 +168,8 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "XGB (RS)",
                                    "LSTM-PCA",
                                    "LSTM-RC-GA",
-                                   "Transformers",
-                                   "Reservoir FS (GA - 2000)"))) %>%
+                                   "Transformers-PCA",
+                                   "Transformers-RC-GA"))) %>%
   group_by(outcomeDate, model) %>%
   filter(outcomeDate >= as.Date("2021-03-15"))
 
@@ -308,7 +310,8 @@ df_individual_model <- df_all %>%
                                   "XGB (RS)",
                                   "LSTM-PCA",
                                   "LSTM-RC-GA",
-                                  "Transformers",
+                                  "Transformers-RC-GA",
+                                  "Transformers-PCA",
                                   "Reservoir FS (RS)",
                                   "Reservoir no FS (GA)",
                                   "Reservoir FS (GA) all anteriority",

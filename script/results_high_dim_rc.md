@@ -41,6 +41,18 @@ The total number of features is 409.
  </thead>
 <tbody>
   <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - 2000) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 14.66 </td>
+   <td style="text-align:right;"> 12.63 </td>
+   <td style="text-align:right;"> -3.92 </td>
+   <td style="text-align:right;"> 7.70 </td>
+   <td style="text-align:right;"> 0.25 </td>
+   <td style="text-align:right;"> 0.31 </td>
+   <td style="text-align:right;"> 0.83 </td>
+   <td style="text-align:right;"> 1.46 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> Reservoir FS (GA) </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 15.27 </td>
@@ -245,7 +257,31 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.76 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Transformers </td>
+   <td style="text-align:left;"> Transformers-PCA </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 19.28 </td>
+   <td style="text-align:right;"> 16.80 </td>
+   <td style="text-align:right;"> 0.69 </td>
+   <td style="text-align:right;"> 11.64 </td>
+   <td style="text-align:right;"> 0.32 </td>
+   <td style="text-align:right;"> 0.51 </td>
+   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 2.79 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Transformers-PCA </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 19.28 </td>
+   <td style="text-align:right;"> 16.80 </td>
+   <td style="text-align:right;"> 0.69 </td>
+   <td style="text-align:right;"> 11.64 </td>
+   <td style="text-align:right;"> 0.32 </td>
+   <td style="text-align:right;"> 0.51 </td>
+   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 2.79 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Transformers-RC-GA </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 18.12 </td>
    <td style="text-align:right;"> 15.43 </td>
@@ -257,16 +293,16 @@ The total number of features is 409.
    <td style="text-align:right;"> 4.02 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Reservoir FS (GA - 2000) </td>
-   <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 14.66 </td>
-   <td style="text-align:right;"> 12.63 </td>
-   <td style="text-align:right;"> -3.92 </td>
-   <td style="text-align:right;"> 7.70 </td>
-   <td style="text-align:right;"> 0.25 </td>
+   <td style="text-align:left;"> Transformers-RC-GA </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 18.12 </td>
+   <td style="text-align:right;"> 15.43 </td>
+   <td style="text-align:right;"> -0.47 </td>
+   <td style="text-align:right;"> 9.33 </td>
    <td style="text-align:right;"> 0.31 </td>
-   <td style="text-align:right;"> 0.83 </td>
-   <td style="text-align:right;"> 1.46 </td>
+   <td style="text-align:right;"> 0.44 </td>
+   <td style="text-align:right;"> 0.97 </td>
+   <td style="text-align:right;"> 4.02 </td>
   </tr>
 </tbody>
 </table>
