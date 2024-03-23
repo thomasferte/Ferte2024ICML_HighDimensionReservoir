@@ -340,8 +340,8 @@ plot_figure_performance_no_update <- df_individual_model %>%
   annotate(geom = "text",
            label = "Holiday break",
            x = as.Date("2021-08-19"),
-           y = 115,
-           size=4,
+           y = 130,
+           size=3.5,
            angle = 90) +
   scale_color_manual(values = c("black", "darkgrey", "#005F73", "#94D2BD", "#AE2012")) +
   scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
@@ -585,7 +585,8 @@ plot_genetic_algo
 ggsave(here::here("results/final_figures/plot_genetic_algo.pdf"),
        plot = plot_genetic_algo,
        useDingbats = TRUE,
-       width = 5)
+       width = 5,
+       height = 7)
 ```
 
 ## Categorical hyperparameters
@@ -965,11 +966,11 @@ plot_coef_input_vs_reservoir <- df_imp_reservoir_temp %>%
 plot_reservoir_vs_input_importance <- ggpubr::ggarrange(plot_figure_performance_no_update + ggplot2::ggtitle("A"),
                                                         plot_coef_input_vs_reservoir + ggplot2::ggtitle("B"),
                                                         nrow = 2, ncol = 1,
-                                                        heights = c(0.6, 0.4))
+                                                        heights = c(0.65, 0.35))
 
 ggsave(here::here("results/final_figures/plot_reservoir_vs_input_importance.pdf"),
        plot = plot_reservoir_vs_input_importance,
-       width = 5, height = 9)
+       width = 5, height = 6)
 
 ```
 
