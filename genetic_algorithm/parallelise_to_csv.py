@@ -69,7 +69,7 @@ def random_sampler_from_hp_df(hp_df):
         res[param_name] = param_value
     return res
 
-def eval_objective_function(params, features, output_path, data_path, job_id, is_training=True, nb_esn = 3, rm_output_files = True, min_date_eval='2021-03-01', units = 500):
+def eval_objective_function(params, features, output_path, data_path, job_id, is_training=True, nb_esn = 3, rm_output_files = True, min_date_eval='2021-03-01', units = 500, forecast_days = 14):
     # xgb
     if("n_estimators" in params.keys()):
         n_estimators = int(params["n_estimators"])
@@ -146,6 +146,7 @@ def eval_objective_function(params, features, output_path, data_path, job_id, is
         bin_features = 0
 
     fct_value = perform_full_training(
+      forecast_days=forecast_days,
       path=data_path,
       min_date_eval=min_date_eval,
       application_param=appParam(mintraining=365, nb_esn= nb_esn, is_training=is_training,
@@ -228,18 +229,18 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
     multiple_is = scenari in ["epidemioMultipleIs", "GeneticMultipleIsBin", "GeneticMultipleIsSelect", "GeneticMultipleIsBinSeed"]
-    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS"]
+    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "GeneticSingleIs_GA_21", "GeneticSingleIs_GA_7"]
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
     pca = scenari in ["GeneticSingleIs_GA_PCA"]
     
-    if scenari in ["xgb_pred_GA", "xgb_pred_RS"] :
+    if scenari in ["xgb_pred_GA", "xgb_pred_RS", "xgb_pred_RS_21", "xgb_pred_RS_7"] :
         hp_df = ({
         'hp':["n_estimators","max_depth","learning_rate", "subsample", "colsample_bytree"],
         'type_hp':["int", "int", "num", "num", "num"],
@@ -273,7 +274,7 @@ def features_nbesn_optimizer_from_scenari(scenari):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
     "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
-    "SingleIs_GA", "SingleIs_RS"] :
+    "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7"] :
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
     else:
@@ -286,24 +287,35 @@ def features_nbesn_optimizer_from_scenari(scenari):
                     "Vaccin_1dose",
                     "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
     
-    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS"] :
+    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS", "xgb_pred_RS_7", "xgb_pred_RS_21"] :
         global_optimizer = "RS"
     else :
         global_optimizer = "GA"
     
     ### set number of repetition
-    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS"] :
+    if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS", "xgb_pred_RS_7", "xgb_pred_RS_21"] :
         nb_esn = 1
-    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS"] :
+    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_21"] :
         nb_esn = 3
     elif scenari in ["GeneticSingleIs_GA_10esn"] :
         nb_esn = 10
     
-    return features, global_optimizer ,nb_esn
+    ## set horizon forecast
+    if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
+    "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
+    "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
+    "SingleIs_GA", "SingleIs_RS"] :
+        forecast_days = 14
+    elif scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
+        forecast_days = 7
+    elif scenari in ["GeneticSingleIs_GA_21", "xgb_pred_RS_21"]:
+        forecast_days = 21
+    
+    return forecast_days, features, global_optimizer ,nb_esn
 
 def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop = 200, Ne = 100, nb_trials = 3200, date = '2021-03-01', units = 500):
     
-    features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
+    forecast_days, features, global_optimizer, nb_esn = features_nbesn_optimizer_from_scenari(scenari)
     
     ### Define hp distribution
     hp_df = scenari_define_hp_distribution(scenari, features)
@@ -347,7 +359,7 @@ def csv_sampler(path_file, data_path, output_path, scenari, array_id = 1, Npop =
         job_start = datetime.now()
         job_id = "array_" + str(array_id) + "_trial_" + str(cpt) + "_time_" + job_start.strftime("%d_%m_%H_%M_%S")
         # evaluate
-        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units, nb_esn=nb_esn)
+        value = eval_objective_function(params, features = features, data_path = data_path, job_id = job_id, output_path=output_path, min_date_eval=date, units = units, nb_esn=nb_esn, forecast_days = forecast_days)
         job_end = datetime.now()
         delta = job_end - job_start
         ### save results

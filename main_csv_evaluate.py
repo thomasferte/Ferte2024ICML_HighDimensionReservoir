@@ -33,6 +33,15 @@ else :
     nb_trials_first = 3200
     nb_trials_update = 1200
 
+if slurm_scenari in ["GeneticSingleIs_GA_21", "xgb_pred_RS_21"]:
+    data_path="data_obfuscated_forecast_21days/"
+elif slurm_scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
+    data_path="data_obfuscated_forecast_7days/"
+else :
+    data_path="data_obfuscated/"
+
+
+
 # Npop = 2
 # Ne = 1
 # nb_trials_first = 3

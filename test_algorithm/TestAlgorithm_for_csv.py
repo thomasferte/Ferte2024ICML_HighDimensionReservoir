@@ -86,7 +86,7 @@ def TestAlgorithm_for_csv(
     return None
 
 
-def get_date_plus_14_from_subfolder(subfolder):
+def get_date_plus_14_from_subfolder(subfolder, forecast_days=14):
   pattern = r'^\d{4}-\d{2}-\d{2}$'
   if match(pattern, subfolder):
     print(f"'{subfolder}' matches the 'YYYY-MM-DD' format.")
@@ -98,11 +98,11 @@ def get_date_plus_14_from_subfolder(subfolder):
   # Convert the min_date_eval to a datetime object
   date_obj = datetime.strptime(temp_min_date_eval, '%Y-%m-%d')
   # Add 14 days
-  new_date_obj = date_obj + timedelta(days=14)
+  new_date_obj = date_obj + timedelta(days=forecast_days)
   # Format the result back to "YYYY-MM-DD" format
   min_date_eval = new_date_obj.strftime('%Y-%m-%d')
   
   print("Original Date:", temp_min_date_eval)
-  print("Date after adding 14 days:", min_date_eval)
+  print("Date after adding ", forecast_days, " days:", min_date_eval)
   
   return min_date_eval
