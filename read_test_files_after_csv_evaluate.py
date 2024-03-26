@@ -45,26 +45,27 @@ dfres = pd.concat(df_list, ignore_index=True)
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
 dfres.to_csv("output/" + folder_i + "_combined.csv", index = False)
 
-df_list = []
-# Iterate over the files
-for file in importance_files:
-  # Read the data from the file using pandas
-  df_res = pd.read_csv(file)
-  # Extract trial and hp_date from the file path
-  string_x = file.split("/")
-  trial = string_x[-2]
-  hp_date = string_x[-3]
-  # Add trial and hp_date as new columns
-  df_res['trial'] = trial.replace("_importance", "")
-  df_res['hp_date'] = hp_date
-  # Append the dataframe to df_list
-  df_list.append(df_res)
-
-# Concatenate all dataframes in df_list into one
-dfres = pd.concat(df_list, ignore_index=True)
-
-# Save the resulting dataframe as an RDS file
-# dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
-dfres.to_csv("output/" + folder_i + "_importance_combined.csv", index = False)
+if folder_i not in ["GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_10esn"]:
+    df_list = []
+    # Iterate over the files
+    for file in importance_files:
+      # Read the data from the file using pandas
+      df_res = pd.read_csv(file)
+      # Extract trial and hp_date from the file path
+      string_x = file.split("/")
+      trial = string_x[-2]
+      hp_date = string_x[-3]
+      # Add trial and hp_date as new columns
+      df_res['trial'] = trial.replace("_importance", "")
+      df_res['hp_date'] = hp_date
+      # Append the dataframe to df_list
+      df_list.append(df_res)
+    
+    # Concatenate all dataframes in df_list into one
+    dfres = pd.concat(df_list, ignore_index=True)
+    
+    # Save the resulting dataframe as an RDS file
+    # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
+    dfres.to_csv("output/" + folder_i + "_importance_combined.csv", index = False)
 
 
