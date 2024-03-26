@@ -77,6 +77,54 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.11 </td>
   </tr>
   <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - 10 esn) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 15.46 </td>
+   <td style="text-align:right;"> 12.31 </td>
+   <td style="text-align:right;"> -3.13 </td>
+   <td style="text-align:right;"> 9.06 </td>
+   <td style="text-align:right;"> 0.29 </td>
+   <td style="text-align:right;"> 0.32 </td>
+   <td style="text-align:right;"> 0.82 </td>
+   <td style="text-align:right;"> 1.85 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - 10 esn) </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 15.48 </td>
+   <td style="text-align:right;"> 12.61 </td>
+   <td style="text-align:right;"> -3.11 </td>
+   <td style="text-align:right;"> 9.11 </td>
+   <td style="text-align:right;"> 0.28 </td>
+   <td style="text-align:right;"> 0.31 </td>
+   <td style="text-align:right;"> 0.84 </td>
+   <td style="text-align:right;"> 1.93 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS 7 days (GA) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 8.94 </td>
+   <td style="text-align:right;"> 7.82 </td>
+   <td style="text-align:right;"> -2.07 </td>
+   <td style="text-align:right;"> 5.22 </td>
+   <td style="text-align:right;"> 0.15 </td>
+   <td style="text-align:right;"> 0.20 </td>
+   <td style="text-align:right;"> 0.83 </td>
+   <td style="text-align:right;"> 3.54 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS 21 days (GA) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 25.48 </td>
+   <td style="text-align:right;"> 16.22 </td>
+   <td style="text-align:right;"> 0.14 </td>
+   <td style="text-align:right;"> 2.21 </td>
+   <td style="text-align:right;"> 0.52 </td>
+   <td style="text-align:right;"> 0.50 </td>
+   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 2.62 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> Reservoir FS (GA) all anteriority </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 15.71 </td>
@@ -207,6 +255,30 @@ The total number of features is 409.
    <td style="text-align:right;"> 0.46 </td>
    <td style="text-align:right;"> 0.89 </td>
    <td style="text-align:right;"> 2.40 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> XGB 21 days (RS) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 25.85 </td>
+   <td style="text-align:right;"> 22.65 </td>
+   <td style="text-align:right;"> 0.51 </td>
+   <td style="text-align:right;"> 23.37 </td>
+   <td style="text-align:right;"> 0.47 </td>
+   <td style="text-align:right;"> 1.13 </td>
+   <td style="text-align:right;"> 0.87 </td>
+   <td style="text-align:right;"> NaN </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> XGB 7 days (RS) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 8.96 </td>
+   <td style="text-align:right;"> 7.69 </td>
+   <td style="text-align:right;"> -2.04 </td>
+   <td style="text-align:right;"> 6.33 </td>
+   <td style="text-align:right;"> 0.14 </td>
+   <td style="text-align:right;"> 0.22 </td>
+   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 5.20 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> LSTM-PCA </td>

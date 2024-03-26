@@ -148,24 +148,34 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
          model = factor(model,
                         levels = c("2000_units",
                                    "GeneticSingleIs_GA",
+                                   "GeneticSingleIs_GA_10esn",
+                                   "GeneticSingleIs_GA_7",
+                                   "GeneticSingleIs_GA_21",
                                    "GeneticSingleIs_GA_1000anteriorite",
                                    "GeneticSingleIs_GA_PCA",
                                    "GeneticSingleIs_RS",
                                    "SingleIs_GA",
                                    "enet_pred_RS",
                                    "xgb_pred_RS",
+                                   "xgb_pred_RS_21",
+                                   "xgb_pred_RS_7",
                                    "LSTM_PCA",
                                    "LSTM_RC",
                                    "transformers_PCA",
                                    "transformers_RC"),
                         labels = c("Reservoir FS (GA - 2000)",
                                    "Reservoir FS (GA)",
+                                   "Reservoir FS (GA - 10 esn)",
+                                   "Reservoir FS 7 days (GA)",
+                                   "Reservoir FS 21 days (GA)",
                                    "Reservoir FS (GA) all anteriority",
                                    "Reservoir FS (GA - PCA)",
                                    "Reservoir FS (RS)",
                                    "Reservoir no FS (GA)",
                                    "Elastic-net (RS)",
                                    "XGB (RS)",
+                                   "XGB 21 days (RS)",
+                                   "XGB 7 days (RS)",
                                    "LSTM-PCA",
                                    "LSTM-RC-GA",
                                    "Transformers-PCA",
@@ -179,7 +189,11 @@ df_all <- df_all_temp %>% slice_min(hp_date) %>% mutate(update = "No") %>%
   filter(!(model %in% c("Reservoir FS (GA) all anteriority",
                         "Reservoir FS (GA - 2000)",
                         "LSTM",
-                        "Transformers") & update == "Yes"))
+                        "Transformers",
+                        "XGB 21 days (RS)",
+                        "XGB 7 days (RS)",
+                        "Reservoir FS 7 days (GA)",
+                        "Reservoir FS 21 days (GA)") & update == "Yes"))
 ```
 
 ## Performance
@@ -294,7 +308,19 @@ ggsave(here::here("results/final_figures/plot_repeated_reservoir.pdf"),
 #| fig-cap: "Model prediction"
 
 df_individual_model <- df_all %>%
-  filter(update == "No") %>%
+  filter(update == "No",
+         model %in% c("Elastic-net (RS)",
+                      "XGB (RS)",
+                      "LSTM-PCA",
+                      "LSTM-RC-GA",
+                      "Transformers-RC-GA",
+                      "Transformers-PCA",
+                      "Reservoir FS (RS)",
+                      "Reservoir no FS (GA)",
+                      "Reservoir FS (GA) all anteriority",
+                      "Reservoir FS (GA - PCA)",
+                      "Reservoir FS (GA)",
+                      "Reservoir FS (GA - 2000)")) %>%
   group_by(outcomeDate, model) %>%
   summarise(outcome = unique(outcome),
             hosp = unique(hosp),
@@ -367,6 +393,18 @@ ggsave(here::here("results/final_figures/plot_figure_performance_no_update.pdf")
 #| fig-cap: "All model prediction depending on update"
 
 plot_figure_performance_all <- df_all %>%
+  filter(model %in% c("Elastic-net (RS)",
+                      "XGB (RS)",
+                      "LSTM-PCA",
+                      "LSTM-RC-GA",
+                      "Transformers-RC-GA",
+                      "Transformers-PCA",
+                      "Reservoir FS (RS)",
+                      "Reservoir no FS (GA)",
+                      "Reservoir FS (GA) all anteriority",
+                      "Reservoir FS (GA - PCA)",
+                      "Reservoir FS (GA)",
+                      "Reservoir FS (GA - 2000)")) %>%
   group_by(outcomeDate, model, update) %>%
   summarise(hosp = unique(hosp),
             outcome = unique(outcome),
@@ -402,6 +440,7 @@ ggsave(here::here("results/final_figures/plot_figure_performance_all.pdf"),
 path_hp <- here::here("results/final_prediction/hyperparameter")
 ls_files_full <- list.files(path_hp, full.names = TRUE, recursive = TRUE)
 names(ls_files_full) <- gsub(ls_files_full, pattern = paste0(path_hp, "/"), replacement = "")
+ls_files_full <- ls_files_full[!grepl(names(ls_files_full), pattern = "^2000units")]
 
 numeric_hp <- c(
   "ridge",
