@@ -13,7 +13,7 @@ from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
 from sklearn.decomposition import PCA
-
+from prophet import Prophet
 
 # Reservoir parameters
 class reservoirParam(object):
@@ -51,6 +51,7 @@ nb_features : (int, default to 0)
                  model = "esn",
                  n_estimators = 10, max_depth = 10, learning_rate = 0.1, subsample = 0.3, colsample_bytree = 0.3,
                  l1_ratio = 0.5,
+                 changepoint_prior_scale = 0.05, seasonality_prior_scale = 10, holidays_prior_scale = 10, seasonality_mode = "additive",
                  pca = 0):
         # define model
         self.model = model
@@ -68,6 +69,11 @@ nb_features : (int, default to 0)
         self.inputBias = inputBias
         self.nb_features = nb_features
         self.bin_features = bin_features
+        # prophet hp
+        self.changepoint_prior_scale = changepoint_prior_scale
+        self.seasonality_prior_scale = seasonality_prior_scale
+        self.holidays_prior_scale = holidays_prior_scale
+        self.seasonality_mode = seasonality_mode
         # xgb hp
         self.n_estimators = n_estimators
         self.max_depth = max_depth
@@ -227,6 +233,26 @@ def fit_xgboost(X, Y, reservoir_param):
     xgb_model.fit(X,Y)
     return xgb_model
 
+def fit_prophet(X, Y, ds, reservoir_param):
+    
+    new_df = pd.DataFrame(X)
+    new_df = new_df.add_prefix("var_") 
+    additional_regressors = list(new_df.columns)
+    new_df['y'] = Y
+    new_df['ds'] = ds
+    
+    model = Prophet(changepoint_prior_scale = reservoir_param.changepoint_prior_scale,
+        seasonality_prior_scale = reservoir_param.seasonality_prior_scale,
+        holidays_prior_scale = reservoir_param.holidays_prior_scale,
+        seasonality_mode = reservoir_param.seasonality_mode)
+    
+    for regressor in additional_regressors:
+        model.add_regressor(regressor)
+    
+    model.fit(new_df)
+    
+    return model
+
 def fit_esn(X,Y, reservoir_param, application_param, vec_coef_enet = 0):
     """Select features on dataframe based on list of names
     Parameters
@@ -291,6 +317,15 @@ def pref_on_test_set(dftest, selected_columns, reservoir_param , application_par
         vecPred = esn.run(X_esn , reset = True)
     if reservoir_param.model in ["enet","xgb"] :
         vecPred = esn.predict(X_esn)
+    if reservoir_param.model in ["prophet"] :
+        new_df = pd.DataFrame(X_esn)
+        new_df = new_df.add_prefix("var_")
+        additional_regressors = list(new_df.columns)
+        new_df['y'] = Y_esn
+        new_df['ds'] = dftest.outcomeDate
+        vecPred = esn.predict(new_df)
+        vecPred = list(vecPred.yhat)
+    
     dfres = dftest.copy()
     dfres['pred'] = np.squeeze(vecPred) + dfres['hosp']
     dfres = dfres[['outcomeDate','outcome','hosp','pred']].tail(1)
@@ -380,6 +415,16 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
                 features_list = scaling['features'].columns.to_list()
                 coef = trained_esn.feature_importances_.tolist()
                 nb_param = trained_esn._Booster.trees_to_dataframe().shape[0]
+        
+        if reservoir_param.model == "prophet" :
+            trained_esn = fit_prophet(X_esn, Y_esn, dftrain.outcomeDate, reservoir_param)
+            
+            if not application_param.is_training:
+                # get feature importance of xgboost
+                features_list = []
+                coef = []
+                nb_param = []
+        
         
         if not application_param.is_training:
             importance_i = pd.DataFrame({'iter': j, 'features': features_list, 'importance': coef, 'nb_param': nb_param, 'outcomeDate': current_outcomeDate})
