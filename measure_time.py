@@ -27,7 +27,7 @@ for scenario, file_i in ls_scenari.items():
 
     # Get the params files
     nb_esn = 1
-    if scenario in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn"]:
+    if scenario in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn"]:
         nb_best_trials = 40
         units = 500
     elif scenario in ["xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS"]:
