@@ -7,7 +7,7 @@
 #SBATCH -J prophet
 
 # walltime (hh:mm::ss)
-#SBATCH -t 20:00:00
+#SBATCH -t 02:00:00
 
 
 # change working directory

@@ -239,12 +239,14 @@ def fit_prophet(X, Y, ds, reservoir_param):
     new_df = new_df.add_prefix("var_") 
     additional_regressors = list(new_df.columns)
     new_df['y'] = Y
-    new_df['ds'] = ds
+    new_df['ds'] = list(ds)
+    
     
     model = Prophet(changepoint_prior_scale = reservoir_param.changepoint_prior_scale,
         seasonality_prior_scale = reservoir_param.seasonality_prior_scale,
         holidays_prior_scale = reservoir_param.holidays_prior_scale,
-        seasonality_mode = reservoir_param.seasonality_mode)
+        seasonality_mode = reservoir_param.seasonality_mode,
+        uncertainty_samples = 0)
     
     for regressor in additional_regressors:
         model.add_regressor(regressor)
@@ -322,7 +324,7 @@ def pref_on_test_set(dftest, selected_columns, reservoir_param , application_par
         new_df = new_df.add_prefix("var_")
         additional_regressors = list(new_df.columns)
         new_df['y'] = Y_esn
-        new_df['ds'] = dftest.outcomeDate
+        new_df['ds'] = list(dftest.outcomeDate)
         vecPred = esn.predict(new_df)
         vecPred = list(vecPred.yhat)
     
@@ -417,7 +419,7 @@ def task(index, selected_files,application_param,reservoir_param,output_path,job
                 nb_param = trained_esn._Booster.trees_to_dataframe().shape[0]
         
         if reservoir_param.model == "prophet" :
-            trained_esn = fit_prophet(X_esn, Y_esn, dftrain.outcomeDate, reservoir_param)
+            trained_esn = fit_prophet(X_esn, Y_esn, df_select.outcomeDate, reservoir_param)
             
             if not application_param.is_training:
                 # get feature importance of xgboost

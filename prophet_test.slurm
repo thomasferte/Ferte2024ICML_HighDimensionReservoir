@@ -17,9 +17,9 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-10
+#SBATCH --array 0-0
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 10
+#SBATCH --cpus-per-task 20
 #SBATCH --mem-per-cpu=2560
 
 # fin des directives PBS
