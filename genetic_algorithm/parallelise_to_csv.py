@@ -252,12 +252,12 @@ def genetic_sampler_from_df(perf_df, hp_df, Npop, Ne):
 
 def scenari_define_hp_distribution(scenari, features):
     # test scenari available
-    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7", "prophet"]
+    available_scenario = ['epidemio1Is', 'epidemioMultipleIs', 'Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed', "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7", "prophet", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv"]
     if scenari not in available_scenario:
         raise ValueError("Scenari should be in " + ', '.join(available_scenario))
     
     multiple_is = scenari in ["epidemioMultipleIs", "GeneticMultipleIsBin", "GeneticMultipleIsSelect", "GeneticMultipleIsBinSeed"]
-    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "GeneticSingleIs_GA_21", "GeneticSingleIs_GA_7"]
+    bin_features = scenari in ["GeneticMultipleIsBin", "GeneticMultipleIsBinSeed", 'GeneticSingleIs', "GeneticSingleIs_GA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "GeneticSingleIs_GA_21", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv"]
     enet = scenari in ["Enet"]
     is_feature_selection = scenari in ["GeneticMultipleIsSelect"]
     seed = scenari in ["GeneticMultipleIsBinSeed"]
@@ -305,6 +305,7 @@ def scenari_define_hp_distribution(scenari, features):
 def features_nbesn_optimizer_from_scenari(scenari):
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
+    "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv",
     "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
     "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7", "prophet"] :
         with open("data/allfeatures", "r") as fp:
@@ -319,6 +320,19 @@ def features_nbesn_optimizer_from_scenari(scenari):
                     "Vaccin_1dose",
                     "URG_covid_19_COUNT", "URG_covid_19_COUNT_rolDeriv7"]
     
+    # remove Features
+    words_to_remove = []
+    if scenari == "GeneticSingleIs_GA_noGironde":
+        words_to_remove = ['GIRONDE', 'Vaccin', 'Majority_variant']
+    if scenari == "GeneticSingleIs_GA_noWeather":
+        words_to_remove = ['t.mean', 'precip', 'RH.mean', 'AH.mean', 'IPTCC.mean', 'ws.mean', 'dewpoint.mean']
+    if scenari == "GeneticSingleIs_GA_noUrgSamu":
+        words_to_remove = ['URG', 'SAMU']
+    if scenari == "GeneticSingleIs_GA_noDeriv":
+        words_to_remove = ['rolDeriv', "rol2Deriv"]
+    if len(words_to_remove) > 0:
+        features = [item for item in features if not any(word in item for word in words_to_remove)]
+    
     if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS", "xgb_pred_RS_7", "xgb_pred_RS_21", "prophet"] :
         global_optimizer = "RS"
     else :
@@ -327,7 +341,7 @@ def features_nbesn_optimizer_from_scenari(scenari):
     ### set number of repetition
     if scenari in ["xgb_pred_RS", "enet_pred_RS", "GeneticSingleIs_RS", "SingleIs_RS", "xgb_pred_RS_7", "xgb_pred_RS_21", "prophet"] :
         nb_esn = 1
-    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_21"] :
+    elif scenari in ["GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS", "SingleIs_GA", "SingleIs_RS", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_21", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv"] :
         nb_esn = 3
     elif scenari in ["GeneticSingleIs_GA_10esn"] :
         nb_esn = 10
@@ -337,6 +351,7 @@ def features_nbesn_optimizer_from_scenari(scenari):
     ## set horizon forecast
     if scenari in ['Enet', 'GeneticSingleIs', 'GeneticMultipleIsBin', 'GeneticMultipleIsSelect', 'GeneticMultipleIsBinSeed',
     "xgb_pred_GA", "enet_pred_GA", "xgb_pred_RS", "enet_pred_RS",
+    "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv",
     "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA", "GeneticSingleIs_GA_10esn", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_1000", "GeneticSingleIs_RS",
     "SingleIs_GA", "SingleIs_RS", "prophet"] :
         forecast_days = 14

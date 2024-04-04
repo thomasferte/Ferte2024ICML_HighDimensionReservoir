@@ -6,6 +6,7 @@ from re import sub
 from re import match
 
 def TestAlgorithm_for_csv(
+  scenari,
   output_path,
   data_path,
   study_path,
@@ -51,6 +52,19 @@ def TestAlgorithm_for_csv(
     else:
         with open("data/allfeatures", "r") as fp:
             features = json.load(fp)
+    
+    # remove Features
+    words_to_remove = []
+    if scenari == "GeneticSingleIs_GA_noGironde":
+        words_to_remove = ['GIRONDE', 'Vaccin', 'Majority_variant']
+    if scenari == "GeneticSingleIs_GA_noWeather":
+        words_to_remove = ['t.mean', 'precip', 'RH.mean', 'AH.mean', 'IPTCC.mean', 'ws.mean', 'dewpoint.mean']
+    if scenari == "GeneticSingleIs_GA_noUrgSamu":
+        words_to_remove = ['URG', 'SAMU']
+    if scenari == "GeneticSingleIs_GA_noDeriv":
+        words_to_remove = ['rolDeriv', "rol2Deriv"]
+    if len(words_to_remove) > 0:
+        features = [item for item in features if not any(word in item for word in words_to_remove)]
     
     # Get all the trials as a DataFrame and remove trials with missing values
     trials_df = pd.read_csv(study_path, on_bad_lines = "skip").dropna()
