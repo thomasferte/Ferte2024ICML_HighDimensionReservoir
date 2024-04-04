@@ -141,13 +141,16 @@ ls_files <- list.files(path_predictions)
 ls_files_full <- list.files(path_predictions, full.names = TRUE)
 names(ls_files_full) <- gsub(ls_files, pattern = "_combined.csv", replacement = "")
 
-
 df_all_temp <- lapply(ls_files_full, read.csv) %>%
   bind_rows(.id = "model") %>%
   mutate(outcomeDate = as.Date(outcomeDate),
          model = factor(model,
                         levels = c("2000_units",
                                    "GeneticSingleIs_GA",
+                                   "GeneticSingleIs_GA_noGironde",
+                                   "GeneticSingleIs_GA_noWeather",
+                                   "GeneticSingleIs_GA_noUrgSamu",
+                                   "GeneticSingleIs_GA_noDeriv",
                                    "GeneticSingleIs_GA_10esn",
                                    "GeneticSingleIs_GA_20esn",
                                    "GeneticSingleIs_GA_7",
@@ -162,10 +165,18 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "xgb_pred_RS_7",
                                    "LSTM_PCA",
                                    "LSTM_RC",
+                                   "LSTM_20_PCA",
                                    "transformers_PCA",
-                                   "transformers_RC"),
+                                   "transformers_RC",
+                                   "prophet",
+                                   "informer",
+                                   "patchtst"),
                         labels = c("Reservoir FS (GA - 2000)",
                                    "Reservoir FS (GA)",
+                                   "Reservoir FS (GA - no Gironde)",
+                                   "Reservoir FS (GA - no Weather)",
+                                   "Reservoir FS (GA - no Emergency)",
+                                   "Reservoir FS (GA - no Deriv)",
                                    "Reservoir FS (GA - 10 esn)",
                                    "Reservoir FS (GA - 20 esn)",
                                    "Reservoir FS 7 days (GA)",
@@ -180,8 +191,12 @@ df_all_temp <- lapply(ls_files_full, read.csv) %>%
                                    "XGB 7 days (RS)",
                                    "LSTM-PCA",
                                    "LSTM-RC-GA",
+                                   "LSTM-PCA-20",
                                    "Transformers-PCA",
-                                   "Transformers-RC-GA"))) %>%
+                                   "Transformers-RC-GA",
+                                   "prophet",
+                                   "informer",
+                                   "patchtst"))) %>%
   group_by(outcomeDate, model) %>%
   filter(outcomeDate >= as.Date("2021-03-15"))
 
@@ -190,12 +205,18 @@ df_all <- df_all_temp %>% slice_min(hp_date) %>% mutate(update = "No") %>%
   ungroup() %>%
   filter(!(model %in% c("Reservoir FS (GA) all anteriority",
                         "Reservoir FS (GA - 2000)",
-                        "LSTM",
-                        "Transformers",
+                        "LSTM-PCA",
+                        "LSTM-RC-GA",
+                        "LSTM-PCA-20",
+                        "Transformers-PCA",
+                        "Transformers-RC-GA",
                         "XGB 21 days (RS)",
                         "XGB 7 days (RS)",
                         "Reservoir FS 7 days (GA)",
-                        "Reservoir FS 21 days (GA)") & update == "Yes"))
+                        "Reservoir FS 21 days (GA)",
+                        "prophet",
+                        "informer",
+                        "patchtst") & update == "Yes"))
 ```
 
 ## Performance
@@ -235,6 +256,7 @@ df_perf %>%
   kableExtra::kable_styling()
 
 # df_all %>%
+#   filter(!is.na(outcome)) |> 
 #   group_by(model) %>%
 #   summarise(min = min(outcomeDate),
 #             max = max(outcomeDate),
@@ -465,13 +487,14 @@ df_all_hp <- lapply(ls_files_full,
   bind_rows(.id = "file_i") %>%
   mutate_at(
     .vars = c(numeric_hp, "time_seconds", "value"),
-    .funs = as.numeric
+    .funs = ~ as.numeric(sub(",", ".", .x, fixed = TRUE))
   ) %>%
   tidyr::separate_wider_delim(cols = file_i,
                               delim = "/",
                               names = c("model", "date")) %>%
   mutate(model = factor(model,
                         levels = c("hp_GeneticSingleIs_GA",
+                                   "hp_GeneticSingleIs_GA_20",
                                    "hp_GeneticSingleIs_RS",
                                    "hp_SingleIs_GA",
                                    "hp_GeneticSingleIs_GA_1000anteriorite",
@@ -479,6 +502,7 @@ df_all_hp <- lapply(ls_files_full,
                                    "hp_enet_pred_RS",
                                    "hp_xgb_pred_RS"),
                         labels = c("Reservoir FS (GA)",
+                                   "Reservoir FS (GA - 20 esn)",
                                    "Reservoir FS (RS)",
                                    "Reservoir no FS (GA)",
                                    "Reservoir FS (GA) all anteriority",
@@ -525,6 +549,7 @@ df_all_hp_best40_numeric <- df_all_hp_best40 %>%
   na.omit()
 
 ls_hpnum_plots <- df_all_hp_best40_numeric %>%
+  filter(!model %in% c("Reservoir FS (GA - 20 esn)")) |> 
   group_by(model) %>%
   group_split() %>%
   lapply(FUN = function(df_i){
@@ -624,6 +649,64 @@ plot_genetic_algo <- ggplot(data = dfGeneticSinglIS_GA_visu,
 plot_genetic_algo
 
 ggsave(here::here("results/final_figures/plot_genetic_algo.pdf"),
+       plot = plot_genetic_algo,
+       useDingbats = TRUE,
+       width = 5,
+       height = 7)
+```
+
+```{r fig.height=10}
+#| label: numeric-hp-rc-ga-20
+#| fig-cap: "Numeric hyperparameters of RC-GA with 20 reservoirs"
+
+dfGeneticSinglIS_GA_visu20 <- df_all_hp %>%
+  filter(model == "Reservoir FS (GA - 20 esn)") %>%
+  group_by(date) %>%
+  mutate(rank = dense_rank(value),
+         rank_factor = case_when(rank <= 40 ~ "Best 40",
+                                 rank <= 200 ~ "Best 200",
+                                 rank > 200 ~ "Other"),
+         rank_factor = factor(rank_factor,
+                              levels = c("Best 200",
+                                         "Best 40",
+                                         "Other"))) %>%
+  ungroup() %>%
+  select(all_of(c("rank_factor", "genetic_id", "last_used_observation", "value", "spectral_radius", "leaking_rate", "input_scaling", "ridge"))) %>%
+  tidyr::pivot_longer(cols = c("spectral_radius", "leaking_rate", "input_scaling", "ridge"),
+                      values_to = "HP_value", names_to = "HP_name") %>%
+  mutate(value = if_else(value > 50, 50, value))
+
+plot_genetic_algo20 <- ggplot(data = dfGeneticSinglIS_GA_visu20,
+                            mapping = aes(x = HP_value, y = value, color = genetic_id)) +
+  geom_point() +
+  # scale_color_brewer() +
+  scale_color_viridis_c(direction = -1, option = "C", begin = 0.3) +
+  labs(color = "Genetic individual") +
+  ggnewscale::new_scale_color() +
+  geom_point(data = dfGeneticSinglIS_GA_visu20 %>%
+               filter(rank_factor != "Other") %>%
+               arrange(rank_factor), 
+             aes(color = rank_factor)) +
+  scale_color_manual(values = c("black", "green")) +
+  facet_grid(last_used_observation ~ HP_name, scales = "free_x") +
+  scale_y_log10() +
+  scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5),
+                labels = c("-10", "-5", "1", "5")) +
+  theme_minimal() +
+  theme(strip.text.y = element_text(angle = 0),
+        legend.position = "bottom") +
+  labs(x = "Log(Hyperparameter value)",
+       y = "MAE",
+       color = "")
+
+# dfGeneticSinglIS_GA_visu %>%
+#   filter(last_used_observation == "2022-01-01", rank_factor == "Best 40") %>%
+#   group_by(HP_name) %>%
+#   summarise(min(HP_value), max(HP_value))
+
+plot_genetic_algo20
+
+ggsave(here::here("results/final_figures/plot_genetic_algo20.pdf"),
        plot = plot_genetic_algo,
        useDingbats = TRUE,
        width = 5,

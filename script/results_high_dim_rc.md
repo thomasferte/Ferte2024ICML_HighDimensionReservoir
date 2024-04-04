@@ -77,52 +77,52 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.11 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Reservoir FS (GA - 10 esn) </td>
+   <td style="text-align:left;"> Reservoir FS (GA - 20 esn) </td>
    <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 15.46 </td>
-   <td style="text-align:right;"> 12.31 </td>
-   <td style="text-align:right;"> -3.13 </td>
-   <td style="text-align:right;"> 9.06 </td>
-   <td style="text-align:right;"> 0.29 </td>
+   <td style="text-align:right;"> 14.84 </td>
+   <td style="text-align:right;"> 12.53 </td>
+   <td style="text-align:right;"> -3.75 </td>
+   <td style="text-align:right;"> 9.60 </td>
+   <td style="text-align:right;"> 0.25 </td>
    <td style="text-align:right;"> 0.32 </td>
-   <td style="text-align:right;"> 0.82 </td>
-   <td style="text-align:right;"> 1.85 </td>
+   <td style="text-align:right;"> 0.81 </td>
+   <td style="text-align:right;"> 1.74 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Reservoir FS (GA - 10 esn) </td>
+   <td style="text-align:left;"> Reservoir FS (GA - 20 esn) </td>
    <td style="text-align:left;"> Yes </td>
-   <td style="text-align:right;"> 15.48 </td>
-   <td style="text-align:right;"> 12.61 </td>
-   <td style="text-align:right;"> -3.11 </td>
-   <td style="text-align:right;"> 9.11 </td>
-   <td style="text-align:right;"> 0.28 </td>
-   <td style="text-align:right;"> 0.31 </td>
-   <td style="text-align:right;"> 0.84 </td>
-   <td style="text-align:right;"> 1.93 </td>
+   <td style="text-align:right;"> 14.70 </td>
+   <td style="text-align:right;"> 12.22 </td>
+   <td style="text-align:right;"> -3.88 </td>
+   <td style="text-align:right;"> 9.66 </td>
+   <td style="text-align:right;"> 0.27 </td>
+   <td style="text-align:right;"> 0.30 </td>
+   <td style="text-align:right;"> 0.81 </td>
+   <td style="text-align:right;"> 1.85 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Reservoir FS 7 days (GA) </td>
    <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 8.94 </td>
-   <td style="text-align:right;"> 7.82 </td>
-   <td style="text-align:right;"> -2.07 </td>
-   <td style="text-align:right;"> 5.22 </td>
-   <td style="text-align:right;"> 0.15 </td>
-   <td style="text-align:right;"> 0.20 </td>
-   <td style="text-align:right;"> 0.83 </td>
-   <td style="text-align:right;"> 3.54 </td>
+   <td style="text-align:right;"> 8.59 </td>
+   <td style="text-align:right;"> 7.42 </td>
+   <td style="text-align:right;"> -2.42 </td>
+   <td style="text-align:right;"> 5.87 </td>
+   <td style="text-align:right;"> 0.16 </td>
+   <td style="text-align:right;"> 0.19 </td>
+   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 4.82 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Reservoir FS 21 days (GA) </td>
    <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 25.48 </td>
-   <td style="text-align:right;"> 16.22 </td>
-   <td style="text-align:right;"> 0.14 </td>
-   <td style="text-align:right;"> 2.21 </td>
+   <td style="text-align:right;"> 25.46 </td>
+   <td style="text-align:right;"> 16.20 </td>
+   <td style="text-align:right;"> 0.12 </td>
+   <td style="text-align:right;"> 2.32 </td>
    <td style="text-align:right;"> 0.52 </td>
    <td style="text-align:right;"> 0.50 </td>
    <td style="text-align:right;"> 1.00 </td>
-   <td style="text-align:right;"> 2.62 </td>
+   <td style="text-align:right;"> 2.93 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Reservoir FS (GA) all anteriority </td>
@@ -293,18 +293,6 @@ The total number of features is 409.
    <td style="text-align:right;"> 3.32 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> LSTM-PCA </td>
-   <td style="text-align:left;"> Yes </td>
-   <td style="text-align:right;"> 15.74 </td>
-   <td style="text-align:right;"> 13.98 </td>
-   <td style="text-align:right;"> -2.84 </td>
-   <td style="text-align:right;"> 11.80 </td>
-   <td style="text-align:right;"> 0.24 </td>
-   <td style="text-align:right;"> 0.50 </td>
-   <td style="text-align:right;"> 0.76 </td>
-   <td style="text-align:right;"> 3.32 </td>
-  </tr>
-  <tr>
    <td style="text-align:left;"> LSTM-RC-GA </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 15.08 </td>
@@ -317,32 +305,20 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.76 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> LSTM-RC-GA </td>
-   <td style="text-align:left;"> Yes </td>
-   <td style="text-align:right;"> 15.08 </td>
-   <td style="text-align:right;"> 12.71 </td>
-   <td style="text-align:right;"> -3.51 </td>
-   <td style="text-align:right;"> 9.30 </td>
-   <td style="text-align:right;"> 0.23 </td>
-   <td style="text-align:right;"> 0.48 </td>
-   <td style="text-align:right;"> 0.80 </td>
-   <td style="text-align:right;"> 1.76 </td>
+   <td style="text-align:left;"> LSTM-PCA-20 </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 16.23 </td>
+   <td style="text-align:right;"> 14.37 </td>
+   <td style="text-align:right;"> -2.35 </td>
+   <td style="text-align:right;"> 12.38 </td>
+   <td style="text-align:right;"> 0.25 </td>
+   <td style="text-align:right;"> 0.52 </td>
+   <td style="text-align:right;"> 0.74 </td>
+   <td style="text-align:right;"> 3.30 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Transformers-PCA </td>
    <td style="text-align:left;"> No </td>
-   <td style="text-align:right;"> 19.28 </td>
-   <td style="text-align:right;"> 16.80 </td>
-   <td style="text-align:right;"> 0.69 </td>
-   <td style="text-align:right;"> 11.64 </td>
-   <td style="text-align:right;"> 0.32 </td>
-   <td style="text-align:right;"> 0.51 </td>
-   <td style="text-align:right;"> 1.00 </td>
-   <td style="text-align:right;"> 2.79 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Transformers-PCA </td>
-   <td style="text-align:left;"> Yes </td>
    <td style="text-align:right;"> 19.28 </td>
    <td style="text-align:right;"> 16.80 </td>
    <td style="text-align:right;"> 0.69 </td>
@@ -365,16 +341,40 @@ The total number of features is 409.
    <td style="text-align:right;"> 4.02 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Transformers-RC-GA </td>
-   <td style="text-align:left;"> Yes </td>
-   <td style="text-align:right;"> 18.12 </td>
-   <td style="text-align:right;"> 15.43 </td>
-   <td style="text-align:right;"> -0.47 </td>
-   <td style="text-align:right;"> 9.33 </td>
+   <td style="text-align:left;"> prophet </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 21.30 </td>
+   <td style="text-align:right;"> 16.33 </td>
+   <td style="text-align:right;"> 2.71 </td>
+   <td style="text-align:right;"> 8.07 </td>
+   <td style="text-align:right;"> 0.39 </td>
+   <td style="text-align:right;"> 0.35 </td>
+   <td style="text-align:right;"> 1.05 </td>
+   <td style="text-align:right;"> 3.15 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> informer </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 18.70 </td>
+   <td style="text-align:right;"> 14.11 </td>
+   <td style="text-align:right;"> 0.12 </td>
+   <td style="text-align:right;"> 4.25 </td>
+   <td style="text-align:right;"> 0.34 </td>
+   <td style="text-align:right;"> 0.38 </td>
+   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 1.69 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> patchtst </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 18.34 </td>
+   <td style="text-align:right;"> 18.14 </td>
+   <td style="text-align:right;"> -0.25 </td>
+   <td style="text-align:right;"> 13.95 </td>
    <td style="text-align:right;"> 0.31 </td>
-   <td style="text-align:right;"> 0.44 </td>
-   <td style="text-align:right;"> 0.97 </td>
-   <td style="text-align:right;"> 4.02 </td>
+   <td style="text-align:right;"> 0.55 </td>
+   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 3.34 </td>
   </tr>
 </tbody>
 </table>
@@ -402,12 +402,18 @@ hyperparameters](results_high_dim_rc_files/figure-commonmark/numeric-hp-1.png)
 ![Numeric hyperparameters of
 RC-GA](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-1.png)
 
+![Numeric hyperparameters of RC-GA with 20
+reservoirs](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-20-1.png)
+
 ## Categorical hyperparameters
 
     [[1]]
     NULL
 
     [[2]]
+    NULL
+
+    [[3]]
     NULL
 
     [[1]]
@@ -422,8 +428,20 @@ RC-GA](results_high_dim_rc_files/figure-commonmark/feature-selection-rc-ga-1.png
 ![Feature
 selection](results_high_dim_rc_files/figure-commonmark/feature-selection-all-1.png)
 
+    $`1`
+
 ![Feature
 selection](results_high_dim_rc_files/figure-commonmark/feature-selection-all-2.png)
+
+
+    $`2`
+
+![Feature
+selection](results_high_dim_rc_files/figure-commonmark/feature-selection-all-3.png)
+
+
+    attr(,"class")
+    [1] "list"      "ggarrange"
 
 ## Ridge update of 2000 units reservoir
 
