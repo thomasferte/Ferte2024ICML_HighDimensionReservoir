@@ -60,7 +60,7 @@ csv_sampler(
   nb_trials=nb_trials_first
   )
 
-if slurm_scenari not in ["GeneticSingleIs_GA_1000", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
+if slurm_scenari not in ["GeneticSingleIs_GA_1000", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv"]:
     print("------- monthly update ------------")
     evolutive_hp_csv(
       units = units,
