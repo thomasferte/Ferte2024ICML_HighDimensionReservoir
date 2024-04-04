@@ -205,6 +205,10 @@ df_all <- df_all_temp %>% slice_min(hp_date) %>% mutate(update = "No") %>%
   ungroup() %>%
   filter(!(model %in% c("Reservoir FS (GA) all anteriority",
                         "Reservoir FS (GA - 2000)",
+                        "Reservoir FS (GA - no Gironde)",
+                        "Reservoir FS (GA - no Weather)",
+                        "Reservoir FS (GA - no Emergency)",
+                        "Reservoir FS (GA - no Deriv)",
                         "LSTM-PCA",
                         "LSTM-RC-GA",
                         "LSTM-PCA-20",

@@ -77,6 +77,54 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.11 </td>
   </tr>
   <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - no Gironde) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 15.67 </td>
+   <td style="text-align:right;"> 13.00 </td>
+   <td style="text-align:right;"> -2.92 </td>
+   <td style="text-align:right;"> 6.19 </td>
+   <td style="text-align:right;"> 0.27 </td>
+   <td style="text-align:right;"> 0.36 </td>
+   <td style="text-align:right;"> 0.90 </td>
+   <td style="text-align:right;"> 1.51 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - no Weather) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 15.93 </td>
+   <td style="text-align:right;"> 12.74 </td>
+   <td style="text-align:right;"> -2.66 </td>
+   <td style="text-align:right;"> 5.73 </td>
+   <td style="text-align:right;"> 0.27 </td>
+   <td style="text-align:right;"> 0.35 </td>
+   <td style="text-align:right;"> 0.88 </td>
+   <td style="text-align:right;"> 1.43 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - no Emergency) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 15.62 </td>
+   <td style="text-align:right;"> 13.10 </td>
+   <td style="text-align:right;"> -2.97 </td>
+   <td style="text-align:right;"> 6.00 </td>
+   <td style="text-align:right;"> 0.28 </td>
+   <td style="text-align:right;"> 0.33 </td>
+   <td style="text-align:right;"> 0.85 </td>
+   <td style="text-align:right;"> 1.20 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - no Deriv) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 18.74 </td>
+   <td style="text-align:right;"> 13.38 </td>
+   <td style="text-align:right;"> 0.15 </td>
+   <td style="text-align:right;"> 0.65 </td>
+   <td style="text-align:right;"> 0.36 </td>
+   <td style="text-align:right;"> 0.39 </td>
+   <td style="text-align:right;"> 1.01 </td>
+   <td style="text-align:right;"> 0.13 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> Reservoir FS (GA - 20 esn) </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 14.84 </td>
