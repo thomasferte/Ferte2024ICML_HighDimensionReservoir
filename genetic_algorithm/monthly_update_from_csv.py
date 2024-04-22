@@ -119,7 +119,7 @@ def reevaluate_previous_trials(previous_perf_path, perf_folder, date, data_path,
     
     return new_perf_file
 
-def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d'), units = 500):
+def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari, Npop = 200, Ne = 100, nb_trials = 1200, min_date_eval = datetime.strptime('2021-03-01', '%Y-%m-%d'), units = 500, update = "month"):
     ##### get all dates files
     files = pd.DataFrame(glob.glob(data_path + '*.csv'),columns = ['full_path'])
     files['file_name'] = files.full_path.str.split(data_path,n=1).str[-1]
@@ -134,8 +134,17 @@ def evolutive_hp_csv(array_id, perf_folder, first_perf_file, data_path, scenari,
     for ind in files.index:
         day = files['day'][ind]
         date = files['date'][ind]
+        
+        if(update == "month"):
+            bool_update = day in [1,2]
+        elif(update == "week"):
+            bool_update = date.weekday() in [0,1]
+        else:
+            raise ValueError("update argument must be week or month")
+        
         date = date.strftime("%Y-%m-%d")
-        if(day in [1,2]):
+        
+        if(bool_update):
             print("------------------" + date + "---------------------")
             ### import previous results and reevaluate them
             trial_ok = 1

@@ -5,15 +5,14 @@ import os
 
 ##### define objective function #####
 slurm_job = os.getenv('SLURM_ARRAY_JOB_ID')
-# slurm_job = "2536874"
+# slurm_job = "2536874"
 slurm_scenari = os.getenv('SLURM_JOB_NAME')
 # slurm_scenari = "GeneticSingleIs_GA_1000"
 array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 # array_id = 1
 
 folder_path = "/beegfs/tferte/output/" + slurm_scenari + "/"
-# folder_path = "output/" + slurm_scenari + "/"
-data_path="data_obfuscated/"
+folder_path = "output/" + slurm_scenari + "/"
 first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
@@ -33,6 +32,7 @@ else :
     nb_trials_first = 3200
     nb_trials_update = 1200
 
+## days forecast
 if slurm_scenari in ["GeneticSingleIs_GA_21", "xgb_pred_RS_21"]:
     data_path="data_obfuscated_forecast_21days/"
 elif slurm_scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
@@ -40,12 +40,18 @@ elif slurm_scenari in ["GeneticSingleIs_GA_7", "xgb_pred_RS_7"]:
 else :
     data_path="data_obfuscated/"
 
+# data_path="data_obfuscated_short/"
 
+## frequency update
+if slurm_scenari in ["GeneticSingleIs_GA_20esn_week"]:
+    update = "week"
+else :
+    update = "month"
 
-# Npop = 2
-# Ne = 1
-# nb_trials_first = 3
-# nb_trials_update = 3
+# Npop = 2
+# Ne = 1
+# nb_trials_first = 3
+# nb_trials_update = 3
 
 print("------- first optimisation ------------")
 csv_sampler(
@@ -63,6 +69,7 @@ csv_sampler(
 if slurm_scenari not in ["GeneticSingleIs_GA_1000", "GeneticSingleIs_GA_21", "xgb_pred_RS_21", "GeneticSingleIs_GA_7", "xgb_pred_RS_7", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv"]:
     print("------- monthly update ------------")
     evolutive_hp_csv(
+      update = update,
       units = units,
       array_id = str(array_id),
       perf_folder = folder_path,

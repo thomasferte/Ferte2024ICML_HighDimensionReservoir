@@ -7,7 +7,7 @@ array_id = os.getenv("SLURM_ARRAY_TASK_ID")
 
 # Define folder_path and folder_list
 folder_path = "/beegfs/tferte/output/"
-folder_list = ["GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_21", "prophet", "xgb_pred_RS_21", "xgb_pred_RS_7", "2000_units", "GeneticSingleIs_GA_1000", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA" "GeneticSingleIs_RS", "SingleIs_GA", "enet_pred_RS", "xgb_pred_RS"]
+folder_list = ["GeneticSingleIs_GA_20esn_week", "GeneticSingleIs_GA_noGironde", "GeneticSingleIs_GA_noWeather", "GeneticSingleIs_GA_noUrgSamu", "GeneticSingleIs_GA_noDeriv", "GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_7", "GeneticSingleIs_GA_21", "prophet", "xgb_pred_RS_21", "xgb_pred_RS_7", "2000_units", "GeneticSingleIs_GA_1000", "GeneticSingleIs_GA", "GeneticSingleIs_GA_PCA" "GeneticSingleIs_RS", "SingleIs_GA", "enet_pred_RS", "xgb_pred_RS"]
 
 # Get the folder_i based on array_id
 folder_i = folder_list[int(array_id)]
@@ -45,7 +45,7 @@ dfres = pd.concat(df_list, ignore_index=True)
 # dfres.to_csv(folder_path + folder_i + "/" + folder_i + "_combined.csv", index = False)
 dfres.to_csv("output/" + folder_i + "_combined.csv", index = False)
 
-if folder_i not in ["GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_10esn"]:
+if folder_i not in ["GeneticSingleIs_GA_20esn", "GeneticSingleIs_GA_20esn_week", "GeneticSingleIs_GA_10esn"]:
     df_list = []
     # Iterate over the files
     for file in importance_files:
