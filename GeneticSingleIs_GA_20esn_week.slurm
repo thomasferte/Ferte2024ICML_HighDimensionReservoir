@@ -7,7 +7,7 @@
 #SBATCH -J GeneticSingleIs_GA_20esn_week
 
 # walltime (hh:mm::ss)
-#SBATCH -t 30:00:00
+#SBATCH -t 40:00:00
 
 
 # change working directory

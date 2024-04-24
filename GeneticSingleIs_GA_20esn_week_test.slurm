@@ -9,7 +9,6 @@
 # walltime (hh:mm::ss)
 #SBATCH -t 15:00:00
 
-
 # change working directory
 # SBATCH --chdir=.
 
@@ -17,7 +16,7 @@
 #SBATCH -o /beegfs/tferte/std_out/%j_%a_%x.out # standard out goes to this file
 #SBATCH -e /beegfs/tferte/std_err/%j_%a_%x.err # standard err goes to this file
 
-#SBATCH --array 0-10
+#SBATCH --array 0-46
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 10
 #SBATCH --mem-per-cpu=2560

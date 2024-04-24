@@ -12,7 +12,7 @@ array_id = os.getenv('SLURM_ARRAY_TASK_ID')
 # array_id = 1
 
 folder_path = "/beegfs/tferte/output/" + slurm_scenari + "/"
-folder_path = "output/" + slurm_scenari + "/"
+# folder_path = "output/" + slurm_scenari + "/"
 first_perf_file = slurm_scenari + "_" + str(slurm_job) + ".csv"
 output_path = folder_path + "csv_parallel/"
 
