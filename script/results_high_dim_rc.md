@@ -149,6 +149,30 @@ The total number of features is 409.
    <td style="text-align:right;"> 1.85 </td>
   </tr>
   <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - 20 esn - week update) </td>
+   <td style="text-align:left;"> No </td>
+   <td style="text-align:right;"> 14.52 </td>
+   <td style="text-align:right;"> 12.00 </td>
+   <td style="text-align:right;"> -4.07 </td>
+   <td style="text-align:right;"> 8.49 </td>
+   <td style="text-align:right;"> 0.26 </td>
+   <td style="text-align:right;"> 0.32 </td>
+   <td style="text-align:right;"> 0.84 </td>
+   <td style="text-align:right;"> 2.02 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Reservoir FS (GA - 20 esn - week update) </td>
+   <td style="text-align:left;"> Yes </td>
+   <td style="text-align:right;"> 15.35 </td>
+   <td style="text-align:right;"> 12.57 </td>
+   <td style="text-align:right;"> -3.23 </td>
+   <td style="text-align:right;"> 9.54 </td>
+   <td style="text-align:right;"> 0.30 </td>
+   <td style="text-align:right;"> 0.31 </td>
+   <td style="text-align:right;"> 0.87 </td>
+   <td style="text-align:right;"> 1.89 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> Reservoir FS 7 days (GA) </td>
    <td style="text-align:left;"> No </td>
    <td style="text-align:right;"> 8.59 </td>
@@ -453,6 +477,12 @@ RC-GA](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-1.png)
 ![Numeric hyperparameters of RC-GA with 20
 reservoirs](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-20-1.png)
 
+![Numeric hyperparameters of RC-GA with 20
+reservoirs](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-20-weekw-1.png)
+
+![Numeric hyperparameters of RC-GA with 20
+reservoirs](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-20-weekw-2.png)
+
 ## Categorical hyperparameters
 
     [[1]]
@@ -462,6 +492,9 @@ reservoirs](results_high_dim_rc_files/figure-commonmark/numeric-hp-rc-ga-20-1.pn
     NULL
 
     [[3]]
+    NULL
+
+    [[4]]
     NULL
 
     [[1]]
