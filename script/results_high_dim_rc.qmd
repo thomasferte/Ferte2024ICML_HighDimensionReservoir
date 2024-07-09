@@ -421,6 +421,53 @@ ggsave(here::here("results/final_figures/plot_figure_performance_no_update.pdf")
        height = 5)
 ```
 
+```{r posterforecast}
+
+plot_posterforecast <- df_individual_model %>%
+  filter(name %in% c("Hosp t+14",
+                     "Observed",
+                     "Reservoir FS (GA - 2000)",
+                     "XGB (RS)")) %>%
+  mutate(name = forcats::fct_recode(name,
+                                    "RC-GA (2000 neurons)" = "Reservoir FS (GA - 2000)",
+                                    "XGBoost" = "XGB (RS)")) |> 
+  ggplot(mapping = aes(x = outcomeDate, y = value, color = name)) +
+  geom_line() +
+  ggstar::geom_star(x = as.Date("2021-08-19"),
+                    starshape = 23,
+                    color = "white",
+                    fill = "#FFB703",
+                    y = 80,
+                    size=5,
+                    inherit.aes = FALSE) +
+  annotate(geom = "text",
+           label = "Holiday break",
+           x = as.Date("2021-08-19"),
+           y = 130,
+           size=3.5,
+           angle = 90) +
+  scale_color_manual(values = c("black", "darkgrey", "#0A97C2", "#D4461C")) +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(x = "Date",
+       y = "Hospitalizations",
+       color = "",
+       fill = "") +
+  guides(color = guide_legend(ncol = 2))
+
+
+plot_posterforecast
+
+ggsave(here::here("results/final_figures/plot_posterforecast.jpeg"),
+       plot = plot_posterforecast,
+       dpi = 10^3,
+       width = 4,
+       height = 3.5)
+
+```
+
+
 ```{r}
 #| label: model-prediction-all
 #| fig-cap: "All model prediction depending on update"
@@ -667,6 +714,42 @@ ggsave(here::here("results/final_figures/plot_genetic_algo.pdf"),
        height = 7)
 ```
 
+```{r plotposterhp, fig.height=10}
+#| label: plotposterhp
+#| fig-cap: "Numeric hyperparameters of RC-GA"
+
+plotposterhp <- ggplot(data = dfGeneticSinglIS_GA_visu |> 
+                         mutate(last_used_observation = as.factor(last_used_observation),
+                                last_used_observation = forcats::fct_rev(last_used_observation),
+                                rank_factor = forcats::fct_relevel(rank_factor,
+                                                                   "Other",
+                                                                   "Best 200",
+                                                                   "Best 40")),
+                            mapping = aes(x = HP_value,
+                                          y = last_used_observation,
+                                          fill = rank_factor)) +
+  
+  ggridges::geom_density_ridges(alpha = .5) +
+  scale_fill_manual(values = c("#0A97C2", "#A4AFB3", "#D4461C")) +
+  facet_grid(. ~ HP_name, scales = "free_x") +
+  scale_x_log10(breaks = c(1e-10, 1e-5, 1, 1e5),
+                labels = c("-10", "-5", "1", "5")) +
+  theme_minimal() +
+  theme(strip.text.y = element_text(angle = 0),
+        legend.position = "bottom") +
+  labs(x = "Log(Hyperparameter value)",
+       y = "MAE",
+       fill = "")
+
+plotposterhp
+
+ggsave(here::here("results/final_figures/plotposterhp.jpeg"),
+       plot = plotposterhp,
+       dpi = 10^3,
+       width = 5,
+       height = 6)
+```
+
 ```{r fig.height=10}
 #| label: numeric-hp-rc-ga-20
 #| fig-cap: "Numeric hyperparameters of RC-GA with 20 reservoirs"
@@ -894,6 +977,10 @@ ggsave(here::here("results/final_figures/plot_feature_imp_RCGA.pdf"),
        plot = ls_hpcat_plots$`Reservoir FS (GA)`,
        width = 6, height = 5)
 
+ggsave(here::here("results/final_figures/plot_feature_imp_RCGA.jpeg"),
+       plot = ls_hpcat_plots$`Reservoir FS (GA)`,
+       width = 6, height = 4,
+       dpi = 10^3)
 ```
 
 ```{r fig.height=15}
@@ -1182,6 +1269,28 @@ plot_coef_input_vs_reservoir <- df_imp_reservoir_temp %>%
        y = "Output layer coefficients") +
   theme(legend.position = "bottom")
 
+plot_coef_input_vs_reservoirjpeg <- df_imp_reservoir_temp %>%
+  ungroup() %>%
+  select(features, importance, outcomeDate) %>%
+  mutate(reservoir_features = factor(grepl("reservoir", x = features),
+                                     levels = c(T, F),
+                                     labels = c("Reservoir",
+                                                "Input layer"))) %>%
+  group_by(outcomeDate, reservoir_features) %>%
+  summarise_at(.vars = "importance",
+               .funs = quantile_function) %>%
+  ggplot(mapping = aes(x = outcomeDate, fill = reservoir_features, ymin = q25, ymax = q75)) +
+  geom_ribbon(alpha = 0.7) +
+  theme_minimal() +
+  scale_fill_manual(values = c("#FB8500", "#219EBC")) +
+  scale_y_log10() +
+  scale_x_date(breaks = "2 month", date_labels = "%y-%m") +
+  labs(fill = "IQR of output layer coef.",
+       x = "Date",
+       y = "Output layer coefficients") +
+  guides(fill = guide_legend(ncol = 1)) +
+  theme(legend.position = "bottom")
+
 plot_reservoir_vs_input_importance <- ggpubr::ggarrange(plot_figure_performance_no_update + ggplot2::ggtitle("A"),
                                                         plot_coef_input_vs_reservoir + ggplot2::ggtitle("B"),
                                                         nrow = 2, ncol = 1,
@@ -1190,6 +1299,13 @@ plot_reservoir_vs_input_importance <- ggpubr::ggarrange(plot_figure_performance_
 ggsave(here::here("results/final_figures/plot_reservoir_vs_input_importance.pdf"),
        plot = plot_reservoir_vs_input_importance,
        width = 5, height = 6)
+
+ggsave(here::here("results/final_figures/plot_coef_input_vs_reservoirjpeg.jpeg"),
+       plot = plot_coef_input_vs_reservoirjpeg,
+       width = 4, height = 3.5,
+       dpi = 10^3)
+
+
 
 ```
 
